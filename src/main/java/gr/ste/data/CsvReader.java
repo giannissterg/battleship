@@ -1,24 +1,35 @@
 package gr.ste.data;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CsvReader {
-    private final String fileName;
-
-    public CsvReader(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String[] read() throws IOException {
-        BufferedReader csvReader = new BufferedReader(new FileReader(fileName));
-        String row;
-        while ((row = csvReader.readLine()) != null) {
-            String[] data = row.split(",");
-            return data;
+    public List<String[]> read(String fileName) throws IOException {
+        FileReader fileReader = null;
+        try {
+            fileReader = new FileReader(fileName);
+        } catch (FileNotFoundException exception) {
+            exception.printStackTrace();
+            throw exception;
         }
-        csvReader.close();
-        return null;
+        BufferedReader csvReader = new BufferedReader(fileReader);
+
+        List<String[]> contents = new ArrayList<>();
+        try {
+            String row;
+            while ((row = csvReader.readLine()) != null) {
+                String[] data = row.split(",");
+                contents.add(data);
+            }
+            csvReader.close();
+        } catch (IOException exception) {
+            exception.printStackTrace();
+            throw exception;
+        }
+        return contents;
     }
 }
