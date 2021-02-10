@@ -1,70 +1,51 @@
 package gr.ste.data;
 
 import gr.ste.domain.BattleshipGame;
+import gr.ste.domain.base.ListMapper;
 import gr.ste.domain.base.Result;
 import gr.ste.domain.entities.*;
 import gr.ste.domain.repositories.GameRepository;
-import javafx.geometry.Orientation;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class GameRepositoryImpl implements GameRepository {
     private final CsvReader csvReader;
-//    private final CsvListMapper<String[], Ship> csvMapper;
+    private final ListMapper<Ship, String[]> shipListMapper;
 
-    public GameRepositoryImpl(CsvReader csvReader) {
+    public GameRepositoryImpl(CsvReader csvReader, ListMapper<Ship, String[]> shipListMapper) {
         this.csvReader = csvReader;
+        this.shipListMapper = shipListMapper;
     }
 
     @Override
-    public Result<BattleshipGame> loadScenario(String filename) {
-        final List<Ship> ships = new ArrayList<>();
-
-        List<String[]> dataResponse;
+    public Result<BattleshipGame> loadScenario(String filename, String enemyFilename) {
         try {
-            dataResponse = csvReader.read(filename);
-            for(String[] data : dataResponse) {
-                assert(data.length == 4);
-                final Position position = new Position(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
+            final List<String[]> dataResponse = csvReader.read(filename);
+            final List<Ship> ships = shipListMapper.toDomain(dataResponse);
 
-                final Orientation orientation;
-                switch (data[3]) {
-                    case "1":
-                        orientation = Orientation.HORIZONTAL;
-                        break;
-                    case "2":
-                        orientation = Orientation.VERTICAL;
-                        break;
-                    default:
-                        return Result.error("Orientation file encoding is not correct");
-                }
+            final List<String[]> enemyDataResponse = csvReader.read(enemyFilename);
+            final List<Ship> enemyShips = shipListMapper.toDomain(enemyDataResponse);
 
-                final Ship ship;
-                switch (data[0]) {
-                    case "1":
-                        ship = new Carrier( UUID.randomUUID().toString(), position, orientation);
-                        break;
-                    case "2":
-                        ship = new Battleship(UUID.randomUUID().toString(), position, orientation);
-                        break;
-                    case "3":
-                        ship = new Cruiser(UUID.randomUUID().toString(), position, orientation);
-                        break;
-                    case "4":
-                        ship = new Submarine(UUID.randomUUID().toString(), position, orientation);
-                        break;
-                    case "5":
-                        ship = new Destroyer(UUID.randomUUID().toString(), position, orientation);
-                        break;
-                    default:
-                        return Result.error("Ship type file encoding is not correct");
-                }
-                ships.add(ship);
+            final Board playerBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, ships);
+            final Board enemyBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, enemyShips);
+
+            if(playerBoard.shipsBoundsCheck() || enemyBoard.shipBoundsCheck()) {
+                return Result.error("Ship position is out of bounds");
             }
-            return Result.ok(new BattleshipGame(new Board(0, 10, 10, ships)));
+
+            if(playerBoard.checkForOverlappingTiles()) {
+                return Result.error("Two ships are overlapping");
+            }
+            if(playerBoard.checkForAdjacentTiles()) {
+                return Result.error("Two ships are adjacent");
+            }
+
+            final Player player1 = new Player("Giannis", playerBoard, PlayerType.human);
+            final Player player2 = new Player("Kostas", enemyBoard, PlayerType.npc);
+
+            return Result.ok(new BattleshipGame(player1, player2));
         } catch (IOException exception) {
             exception.printStackTrace();
             return Result.error("File could not be read");

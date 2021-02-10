@@ -1,6 +1,5 @@
 package gr.ste;
 
-import com.sun.javafx.fxml.builder.JavaFXSceneBuilder;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -34,7 +33,6 @@ public class BattleshipApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         mainWindow = primaryStage;
         Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("root.fxml")));
-
         mainScene = new Scene(root);
 //        mainScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         mainWindow.setTitle(mainWindowTitle);

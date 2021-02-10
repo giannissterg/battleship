@@ -1,7 +1,6 @@
 package gr.ste.domain.mappers;
 
 import gr.ste.domain.base.Mapper;
-import gr.ste.domain.base.Result;
 import gr.ste.domain.entities.*;
 import javafx.geometry.Orientation;
 
@@ -11,9 +10,7 @@ public class ShipMapper implements Mapper<Ship, String[]> {
     @Override
     public Ship toDomain(String[] data) {
         assert(data.length == 4);
-
         final Position position = new Position(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
-
         Orientation orientation = null;
         switch (data[3]) {
             case "1":

@@ -16,6 +16,7 @@ public class CsvReader {
             exception.printStackTrace();
             throw exception;
         }
+
         BufferedReader csvReader = new BufferedReader(fileReader);
 
         List<String[]> contents = new ArrayList<>();
