@@ -1,4 +1,4 @@
-package gr.ste.presentation.bloc;
+package gr.ste.presentation.events;
 
 public abstract class BattleshipGameEvent {
 }

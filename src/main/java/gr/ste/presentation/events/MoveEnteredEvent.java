@@ -1,4 +1,4 @@
-package gr.ste.presentation.bloc;
+package gr.ste.presentation.events;
 
 import gr.ste.domain.entities.Position;
 
@@ -6,7 +6,7 @@ public class MoveEnteredEvent extends BattleshipGameEvent {
     private Position targetPosition;
     private int targetPlayerId;
 
-    MoveEnteredEvent(Position targetPosition, int targetPlayerId) {
+    public MoveEnteredEvent(Position targetPosition, int targetPlayerId) {
         this.targetPosition = targetPosition;
         this.targetPlayerId = targetPlayerId;
     }

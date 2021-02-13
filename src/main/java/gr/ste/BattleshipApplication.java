@@ -1,18 +1,13 @@
 package gr.ste;
 
+import gr.ste.presentation.BattleshipApplicationViewHandler;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.util.Objects;
+import java.io.IOException;
 
 public class BattleshipApplication extends Application {
-
-    private Stage mainWindow;
-    private Scene mainScene;
-    private final String mainWindowTitle = "MediaLab Battleship";
+    BattleshipApplicationViewHandler battleshipApplicationViewHandler;
 
     /**
      * The main entry point for all JavaFX applications.
@@ -27,17 +22,12 @@ public class BattleshipApplication extends Application {
      *                     the application scene can be set.
      *                     Applications may create other stages, if needed, but they will not be
      *                     primary stages.
-     * @throws Exception if something goes wrong
+     * @throws IOException if something goes wrong
      */
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        mainWindow = primaryStage;
-        Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("root.fxml")));
-        mainScene = new Scene(root);
-//        mainScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
-        mainWindow.setTitle(mainWindowTitle);
-        mainWindow.setScene(mainScene);
-        mainWindow.show();
+    public void start(Stage primaryStage) throws IOException {
+        battleshipApplicationViewHandler = new BattleshipApplicationViewHandler(primaryStage);
+        battleshipApplicationViewHandler.launchStartWindow();
     }
 
     public static void main(String[] args) {

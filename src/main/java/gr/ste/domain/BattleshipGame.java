@@ -41,7 +41,7 @@ public class BattleshipGame implements Serializable {
     public void playRound() {
         Player currentPlayer = findPlayerById(currentPlayerId);
         if(currentPlayer.isNPC()) {
-            currentPlayer.play();
+//            currentPlayer.play();
         }
     }
 

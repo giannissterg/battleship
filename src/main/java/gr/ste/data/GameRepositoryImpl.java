@@ -31,16 +31,16 @@ public class GameRepositoryImpl implements GameRepository {
             final Board playerBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, ships);
             final Board enemyBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, enemyShips);
 
-            if(playerBoard.shipsBoundsCheck() || enemyBoard.shipBoundsCheck()) {
-                return Result.error("Ship position is out of bounds");
-            }
+//            if(playerBoard.shipsBoundsCheck() || enemyBoard.shipBoundsCheck()) {
+//                return Result.error("Ship position is out of bounds");
+//            }
 
-            if(playerBoard.checkForOverlappingTiles()) {
-                return Result.error("Two ships are overlapping");
-            }
-            if(playerBoard.checkForAdjacentTiles()) {
-                return Result.error("Two ships are adjacent");
-            }
+//            if(playerBoard.checkForOverlappingTiles()) {
+//                return Result.error("Two ships are overlapping");
+//            }
+//            if(playerBoard.checkForAdjacentTiles()) {
+//                return Result.error("Two ships are adjacent");
+//            }
 
             final Player player1 = new Player("Giannis", playerBoard, PlayerType.human);
             final Player player2 = new Player("Kostas", enemyBoard, PlayerType.npc);

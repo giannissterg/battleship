@@ -48,12 +48,8 @@ public class Board {
             for(Ship otherShip : ships) {
                 Position otherFirstPosition = otherShip.getPositions().get(0);
                 Position otherLastPosition = otherShip.getPositions().get(ship.getPositions().size() - 1);
-
             }
         }
+        return true;
     }
-
-
-
-
 }

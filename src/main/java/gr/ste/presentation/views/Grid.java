@@ -1,23 +1,22 @@
-package gr.ste.presentation;
+package gr.ste.presentation.views;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
-class Grid extends Pane {
+public class Grid extends Pane {
 
     int rows;
     int columns;
 
     double width;
-    double height;
+    private double height;
 
-    Cell[][] cells;
+    private Cell[][] cells;
 
-    public Grid( int columns, int rows, double width, double height) {
-
+    public Grid(int columns, int rows, double width, double height) {
         this.columns = columns;
         this.rows = rows;
-        this.width = width;
+        this.width  = width;
         this.height = height;
 
         cells = new Cell[rows][columns];
