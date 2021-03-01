@@ -4,110 +4,92 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gr.ste.presentation.controllers.PlayerController">
-    <top>
-        <MenuBar id="menuBar" focusTraversable="true">
-            <menus>
-                <Menu text="Application">
-                    <items>
-                        <MenuItem text="Start" />
-                        <MenuItem text="Load" />
-                        <SeparatorMenuItem />
-<!--                        <MenuItem text="Exit" onAction="#onFire" />-->
-                    </items>
-                </Menu>
-                <Menu text="Details">
-                    <items>
-                        <MenuItem text="Enemy Ships" />
-                        <MenuItem text="Player Shots" />
-                        <MenuItem text="Enemy Shots" />
-                    </items>
-                </Menu>
-                <Menu text="Help">
-                    <items>
-                        <MenuItem disable="true" text="Search" />
-                        <MenuItem text="Online Manual" visible="false" />
-                        <SeparatorMenuItem />
-                        <MenuItem text="About" />
-                    </items>
-                </Menu>
-            </menus>
-        </MenuBar>
-    </top>
-   <center>
-      <HBox fx:id="horizontalBox" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <GridPane fx:id="myGridPane" alignment="CENTER">
-              <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-              </columnConstraints>
-              <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-              </rowConstraints>
-            </GridPane>
-             <GridPane fx:id="enemyGridPane">
-                 <columnConstraints>
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                 </columnConstraints>
-                 <rowConstraints>
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                     <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
-                 </rowConstraints>
-             </GridPane>
-         </children>
-         <BorderPane.margin>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </BorderPane.margin>
-      </HBox>
-   </center>
-   <bottom>
-      <HBox alignment="CENTER" onKeyPressed="#fire" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <TextField fx:id="xCoordinateTextField">
-               <HBox.margin>
-                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-               </HBox.margin></TextField>
-            <TextField fx:id="yCoordinateTextField">
-               <HBox.margin>
-                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-               </HBox.margin></TextField>
-            <Button fx:id="fireButton" mnemonicParsing="false" onKeyPressed="#fire" text="Fire" />
-         </children>
-      </HBox>
-   </bottom>
-</BorderPane>
+<VBox fx:id="root" prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gr.ste.presentation.controllers.PlayerController">
+<!--    <MenuBar id="menuBar" focusTraversable="true">-->
+<!--        <Menu text="Application">-->
+<!--            <MenuItem text="Start"/>-->
+<!--            <MenuItem text="Load"/>-->
+<!--            <SeparatorMenuItem/>-->
+<!--            &lt;!&ndash;                        <MenuItem text="Exit" onAction="#onFire" />&ndash;&gt;-->
+<!--        </Menu>-->
+<!--        <Menu text="Details">-->
+<!--            <MenuItem text="Enemy Ships"/>-->
+<!--            <MenuItem text="Player Shots"/>-->
+<!--            <MenuItem text="Enemy Shots"/>-->
+<!--        </Menu>-->
+<!--        <Menu text="Help">-->
+<!--            <MenuItem disable="true" text="Search"/>-->
+<!--            <MenuItem text="Online Manual" visible="false"/>-->
+<!--            <SeparatorMenuItem/>-->
+<!--            <MenuItem text="About"/>-->
+<!--        </Menu>-->
+<!--    </MenuBar>-->
+<!--    <HBox fx:id="horizontalBox">-->
+<!--        <GridPane fx:id="myGridPane" alignment="CENTER">-->
+<!--            <columnConstraints>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--            </columnConstraints>-->
+<!--            <rowConstraints>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--            </rowConstraints>-->
+<!--        </GridPane>-->
+<!--        <GridPane fx:id="enemyGridPane">-->
+<!--            <columnConstraints>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>-->
+<!--            </columnConstraints>-->
+<!--            <rowConstraints>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--                <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES"/>-->
+<!--            </rowConstraints>-->
+<!--        </GridPane>-->
+<!--    </HBox>-->
+    <HBox alignment="CENTER" onKeyPressed="#fire" prefHeight="100.0" prefWidth="200.0">
+        <TextField fx:id="xCoordinateTextField">
+           <HBox.margin>
+               <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+           </HBox.margin>
+        </TextField>
+        <TextField fx:id="yCoordinateTextField">
+           <HBox.margin>
+               <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+           </HBox.margin>
+        </TextField>
+        <Button fx:id="fireButton" mnemonicParsing="false" onKeyPressed="#fire" text="Fire"/>
+    </HBox>
+</VBox>

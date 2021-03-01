@@ -1,7 +1,7 @@
-package gr.ste.presentation;
+package gr.ste.presentation.view_handlers;
 
-import gr.ste.presentation.views.BaseWindow;
-import gr.ste.presentation.views.BattleshipGameWindow;
+import gr.ste.presentation.windows.BaseWindow;
+import gr.ste.presentation.windows.BattleshipGameWindow;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;

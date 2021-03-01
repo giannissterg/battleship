@@ -1,6 +1,6 @@
 package gr.ste;
 
-import gr.ste.presentation.BattleshipApplicationViewHandler;
+import gr.ste.presentation.view_handlers.BattleshipApplicationViewHandler;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

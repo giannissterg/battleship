@@ -1,4 +1,4 @@
-package gr.ste.presentation.views;
+package gr.ste.presentation.windows;
 
 import gr.ste.presentation.di.DependencyInjection;
 import javafx.scene.Parent;

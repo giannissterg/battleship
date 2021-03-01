@@ -1,4 +1,4 @@
-package gr.ste.presentation;
+package gr.ste.presentation.view_handlers;
 
 import java.io.IOException;
 

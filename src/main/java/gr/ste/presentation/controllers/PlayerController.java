@@ -9,17 +9,21 @@ import gr.ste.domain.entities.ShipPosition;
 import gr.ste.domain.repositories.GameRepository;
 import gr.ste.presentation.events.BattleshipGameEvent;
 import gr.ste.presentation.events.MoveEnteredEvent;
+import gr.ste.presentation.widgets.BattleshipGridPane;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.GridPane;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +33,7 @@ import java.util.ResourceBundle;
 public class PlayerController implements Initializable {
 
     @FXML
-    private GridPane myGridPane;
-
-    @FXML
-    private GridPane enemyGridPane;
+    private VBox root;
 
     @FXML
     private Button fireButton;
@@ -45,9 +46,11 @@ public class PlayerController implements Initializable {
 
     private final GameRepository gameRepository;
     private BattleshipGame gameState;
+    private final List<GridPane> boardPanes;
 
     public PlayerController(GameRepository gameRepository) {
         this.gameRepository = gameRepository;
+        this.boardPanes = new ArrayList<>();
     }
 
     @Override
@@ -59,34 +62,47 @@ public class PlayerController implements Initializable {
         fireButton.setOnAction(e -> fire());
         if (!domainResponse.hasError()) {
             gameState = domainResponse.getValue();
-            myGridPane.setBorder(
-                    new Border(
-                            new BorderStroke(
-                                    Color.BLACK,
-                                    BorderStrokeStyle.SOLID,
-                                    null,
-                                    BorderStroke.DEFAULT_WIDTHS
-                            )
-                    )
-            );
-            enemyGridPane.setBorder(
-                    new Border(
-                            new BorderStroke(
-                                    Color.BLACK,
-                                    BorderStrokeStyle.SOLID,
-                                    null,
-                                    BorderStroke.DEFAULT_WIDTHS
-                            )
-                    )
-            );
 
+            MenuBar gameMenuBar = createMenuBar();
+
+            HBox hbox = new HBox();
             for (Player player : gameState.players) {
-                player.getBoard().ships.forEach(ship -> placeShip(ship, player == gameState.findPlayerById(0) ? myGridPane : enemyGridPane));
+                Label nameLabel = new Label(player.getName());
+                Label scoreLabel = new Label(Integer.toString(player.getScore()));
+
+                BattleshipGridPane playerGrid = createGrid();
+                VBox playerScoreBoard = new VBox(nameLabel, scoreLabel, playerGrid);
+                if(player.getId() == 0) {
+                    playerScoreBoard.setAlignment(Pos.CENTER_LEFT);
+                } else {
+                    playerScoreBoard.setAlignment(Pos.CENTER_RIGHT);
+                }
+
+                hbox.getChildren().add(playerScoreBoard);
+                player.getBoard().ships.forEach(playerGrid::add);
+                boardPanes.add(playerGrid);
             }
+
+            hbox.setAlignment(Pos.CENTER);
+            hbox.setSpacing(100.0);
+
+            root.getChildren().add(0, gameMenuBar);
+            root.getChildren().add(1, hbox);
+
         } else {
             showDialog();
         }
         gameState.playRound();
+    }
+
+    private BattleshipGridPane createGrid() {
+        BattleshipGridPane gridPane = new BattleshipGridPane(10, 10, 500, 500);
+        try {
+            gridPane.setBackgroundImage("images/sea.png");
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        return gridPane;
     }
 
     @FXML
@@ -106,37 +122,66 @@ public class PlayerController implements Initializable {
 
             Position targetPosition = moveEnteredEvent.getTargetPosition();
             Player targetPlayer = gameState.findPlayerById(moveEnteredEvent.getTargetPlayerId());
+            GridPane targetPane = boardPanes.get(moveEnteredEvent.getTargetPlayerId());
+
+            boolean hitShip = false;
             for (Ship enemyShip : targetPlayer.getBoard().ships) {
                 for (ShipPosition shipPart : enemyShip.getPositions()) {
                     if (moveEnteredEvent.getTargetPosition().getX() == shipPart.getX() && moveEnteredEvent.getTargetPosition().getY() == shipPart.getY()) {
-                        Rectangle r = new Rectangle(50,50);
-                        r.setFill(Color.BLACK);
-                        enemyGridPane.add(r, targetPosition.getY(), targetPosition.getX());
-                        //TODO: update tile
-                        break;
-                    } else {
-                        Rectangle r = new Rectangle(50,50);
-                        r.setFill(Color.GRAY);
-                        enemyGridPane.add(r, targetPosition.getY(), targetPosition.getX());
-//                        gameState.findPlayerById(moveEnteredEvent.getTargetPlayerId()).getBoard().misses.add(targetPosition);
+                        hitShip = true;
                         break;
                     }
                 }
             }
+            showMove(targetPane, targetPosition, hitShip);
+//            gameState.updateShip();
+//            gameState.rewardPlayer(enemyShip, shipPosition);
+//            gameState.update(moveEnteredEvent, hitShip);
+//            gameState.findPlayerById(moveEnteredEvent.getTargetPlayerId()).getBoard().misses.add(targetPosition);
+
             gameState.nextPlayer();
+            MoveEnteredEvent nextMoveTarget = gameState.playRound();
+            updateBoard(nextMoveTarget);
         }
     }
 
-    private void placeShip(Ship ship, GridPane pane) {
-        for (ShipPosition shipPosition : ship.getPositions()) {
-            Rectangle r = new Rectangle(50, 50);
-            r.setFill(Color.RED);
-            pane.add(r, shipPosition.getY(), shipPosition.getX());
+    void showMove(GridPane targetPane, Position targetPosition, boolean success) {
+        Rectangle r = new Rectangle(50.0,50.0);
+        if(success) {
+            r.setFill(Color.BLACK);
+        } else {
+            r.setFill(Color.GRAY);
         }
+        targetPane.add(r, targetPosition.getY(), targetPosition.getX());
     }
 
     private void showDialog() {
 
+    }
+
+    private MenuBar createMenuBar() {
+        MenuBar menuBar = new MenuBar();
+
+        Menu applicationMenu = createMenu("Application", new String[]{"Start", "Load"});
+        Menu detailsMenu = createMenu("Details", new String[]{"Enemy ships", "Player shots", "Enemy shots"});
+        Menu helpMenu = createMenu("Help", new String[]{"Help"});
+
+        menuBar.getMenus().addAll(applicationMenu, detailsMenu, helpMenu);
+        return menuBar;
+    }
+
+    private Menu createMenu(String menuName, String[] menuItemNames) {
+        Menu menu = new Menu(menuName);
+        for(String menuItemName : menuItemNames) {
+            MenuItem menuItem = new MenuItem(menuItemName);
+            menuItem.setOnAction(this::handleMenuClicked);
+            menu.getItems().add(menuItem);
+        }
+        return menu;
+    }
+
+    private void handleMenuClicked(ActionEvent actionEvent) {
+        System.out.println("A");
     }
 
 }

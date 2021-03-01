@@ -1,4 +1,4 @@
-package gr.ste.presentation.views;
+package gr.ste.presentation.windows;
 
 public class BattleshipGameWindow extends BaseWindow {
     @Override

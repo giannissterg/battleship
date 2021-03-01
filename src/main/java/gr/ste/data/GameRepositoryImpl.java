@@ -42,8 +42,8 @@ public class GameRepositoryImpl implements GameRepository {
 //                return Result.error("Two ships are adjacent");
 //            }
 
-            final Player player1 = new Player("Giannis", playerBoard, PlayerType.human);
-            final Player player2 = new Player("Kostas", enemyBoard, PlayerType.npc);
+            final Player player1 = new Player(0,"Giannis", playerBoard, PlayerType.human);
+            final Player player2 = new Player(1,"Kostas", enemyBoard, PlayerType.npc);
 
             return Result.ok(new BattleshipGame(player1, player2));
         } catch (IOException exception) {

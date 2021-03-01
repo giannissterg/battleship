@@ -2,6 +2,8 @@ package gr.ste.domain.entities;
 
 import java.util.Objects;
 
+import static java.lang.Math.abs;
+
 public class Position {
     private final int x;
     private final int y;
@@ -17,6 +19,10 @@ public class Position {
 
     public int getY() {
         return y;
+    }
+
+    int distance(Position other) {
+        return abs(x - other.getX()) + abs(y - other.getY());
     }
 
     @Override

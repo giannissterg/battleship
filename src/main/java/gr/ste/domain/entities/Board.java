@@ -1,5 +1,7 @@
 package gr.ste.domain.entities;
 
+import javafx.geometry.Orientation;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,13 +45,44 @@ public class Board {
         return true;
     }
 
-    public boolean checkForOverlappingTiles() {
+    public boolean checkForOverlappingTiles() throws IllegalStateException {
+        int[] frequencyTable = new int[WIDTH * HEIGHT];
+        for(Ship ship : ships) {
+            for(Position pos : ship.getPositions())
+                frequencyTable[pos.getX() + pos.getY() * WIDTH]++;
+        }
+
+        for(int y = 0; y < HEIGHT; y++) {
+            for(int x = 0; x < WIDTH; x++) {
+                if(frequencyTable[x + y * WIDTH] > 1){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean checkForAdjacentTiles() {
         for(Ship ship : ships) {
             for(Ship otherShip : ships) {
+
+                Position firstPosition = ship.getPositions().get(0);
+                Position lastPosition = ship.getPositions().get(ship.getPositions().size() - 1);
                 Position otherFirstPosition = otherShip.getPositions().get(0);
                 Position otherLastPosition = otherShip.getPositions().get(ship.getPositions().size() - 1);
+                if(firstPosition.getX() == lastPosition.getX()) {
+
+                }
             }
         }
         return true;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }

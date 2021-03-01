@@ -25,6 +25,7 @@ public class DependencyInjection {
         FXMLLoader loader = getLoader(location);
         return loader.load();
     }
+
     public static FXMLLoader getLoader(String location) {
         return new FXMLLoader(
                 DependencyInjection.class.getClassLoader().getResource(location),
