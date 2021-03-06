@@ -2,10 +2,12 @@ package gr.ste.presentation.view_handlers;
 
 import gr.ste.presentation.windows.BaseWindow;
 import gr.ste.presentation.windows.BattleshipGameWindow;
+import gr.ste.presentation.windows.StartWindow;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +21,13 @@ public class BattleshipApplicationViewHandler implements ViewHandler {
     }
 
     @Override
-    public void launchStartWindow() throws IOException {
+    public void launchStartMenuWindow() throws IOException {
+        StartWindow startWindow = new StartWindow();
+        buildAndShowScene(primaryStage, startWindow);
+    }
+
+    @Override
+    public void launchGameWindow() throws IOException {
         BattleshipGameWindow gameWindow = new BattleshipGameWindow();
         buildAndShowScene(primaryStage, gameWindow);
     }
@@ -31,6 +39,11 @@ public class BattleshipApplicationViewHandler implements ViewHandler {
         buildAndShowScene(aboutStage, new BattleshipGameWindow());
     }
 
+    @Override
+    public void launch(BaseWindow window) throws IOException {
+        buildAndShowScene(primaryStage, window);
+    }
+
     private void buildAndShowScene(Stage stage, BaseWindow window) throws IOException {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(window.iconFilePath())) {
             if (is != null) {
@@ -39,7 +52,9 @@ public class BattleshipApplicationViewHandler implements ViewHandler {
         }
         stage.setTitle(window.titleBundleKey());
         stage.setResizable(window.resizable());
-        stage.setScene(new Scene(window.getView()));
+
+        Scene windowScene = new Scene(window.getView());
+        stage.setScene(windowScene);
         stage.show();
     }
 }

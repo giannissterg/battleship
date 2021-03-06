@@ -60,6 +60,19 @@ public class Ship {
     }
 
     public boolean isSunk() {
-        return positions.get(0).getShipStatus() == ShipStatus.sunk;
+        boolean isSunk = false;
+        for(ShipPosition shipPosition : positions) {
+            if(shipPosition.getShipStatus() != ShipStatus.damaged) {
+                isSunk = false;
+                break;
+            } else {
+                isSunk = true;
+            }
+        }
+
+        if(isSunk) {
+            positions.forEach(shipPosition -> shipPosition.setShipStatus(ShipStatus.sunk));
+        }
+        return isSunk;
     }
 }

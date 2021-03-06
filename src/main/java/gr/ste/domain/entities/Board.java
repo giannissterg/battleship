@@ -1,7 +1,5 @@
 package gr.ste.domain.entities;
 
-import javafx.geometry.Orientation;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +10,7 @@ public class Board {
     private final int width;
     private final int height;
     public final List<Ship> ships;
-    public final Set<Position> misses;
+    private final Set<Position> misses;
     public static final int WIDTH = 10;
     public static final int HEIGHT = 10;
 
@@ -64,19 +62,10 @@ public class Board {
 
     public boolean checkForAdjacentTiles() {
         for(Ship ship : ships) {
-            for(Ship otherShip : ships) {
-
-                Position firstPosition = ship.getPositions().get(0);
-                Position lastPosition = ship.getPositions().get(ship.getPositions().size() - 1);
-                Position otherFirstPosition = otherShip.getPositions().get(0);
-                Position otherLastPosition = otherShip.getPositions().get(ship.getPositions().size() - 1);
-                if(firstPosition.getX() == lastPosition.getX()) {
-
-                }
-            }
         }
         return true;
     }
+
 
     public int getWidth() {
         return width;
@@ -84,5 +73,13 @@ public class Board {
 
     public int getHeight() {
         return height;
+    }
+
+    public void addMissedShot(Position position) {
+        misses.add(position);
+    }
+
+    public Set<Position> getMissedShots() {
+        return misses;
     }
 }

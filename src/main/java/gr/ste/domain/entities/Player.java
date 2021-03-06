@@ -1,5 +1,6 @@
 package gr.ste.domain.entities;
 
+import java.util.HashMap;
 import java.util.Stack;
 
 public class Player {
@@ -7,14 +8,14 @@ public class Player {
     private final String name;
     private final PlayerType type;
     private int score;
-    private Stack<Position> successfulHits;
+    private Stack<Move> pastMoves;
     private Board board;
 
     public Player(int id, String name, Board board, PlayerType playerType) {
         this.id = id;
         this.name = name;
         this.score = 0;
-        this.successfulHits = new Stack<>();
+        this.pastMoves = new Stack<Move>();
         this.board = board;
         this.type = playerType;
     }
@@ -25,15 +26,24 @@ public class Player {
         return board;
     }
 
-    public Stack<Position> getSuccessfulHits() {
-        return successfulHits;
+//    public void updateBoard(Move moveMade) {
+//        if(moveMade.isHit()) {
+//            board.updateShip(moveMade);
+//        } else {
+//            board.addMissedShot(moveMade);
+//        }
+//    }
+
+    public Stack<Move> getPastMoves() {
+        return pastMoves;
     }
 
-    public void addSuccessfulHit(Position p) {
-        successfulHits.add(p);
+    public void addMove(Move move) {
+        pastMoves.add(move);
     }
-    public void setSuccessfulHits(Stack<Position> successfulHits) {
-        this.successfulHits = successfulHits;
+
+    public void reward(int reward) {
+        this.score += reward;
     }
 
     public int getId() {

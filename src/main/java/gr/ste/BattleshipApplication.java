@@ -27,7 +27,7 @@ public class BattleshipApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         battleshipApplicationViewHandler = new BattleshipApplicationViewHandler(primaryStage);
-        battleshipApplicationViewHandler.launchStartWindow();
+        battleshipApplicationViewHandler.launchGameWindow();
     }
 
     public static void main(String[] args) {

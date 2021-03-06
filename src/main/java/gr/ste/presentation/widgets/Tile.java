@@ -9,7 +9,7 @@ public class Tile extends StackPane {
 
     public Tile(double width, double height) {
         setPrefSize(width, height);
-        setOpacity(0.9);
+        //setOpacity(0.9);
     }
 
     public void highlight() {

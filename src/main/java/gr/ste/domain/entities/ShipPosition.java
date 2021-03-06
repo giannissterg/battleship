@@ -2,6 +2,7 @@ package gr.ste.domain.entities;
 
 public class ShipPosition extends Position {
     private ShipStatus shipStatus;
+
     public ShipPosition(int x, int y) {
         super(x, y);
         this.shipStatus = ShipStatus.untouched;

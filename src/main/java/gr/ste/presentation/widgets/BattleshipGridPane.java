@@ -1,11 +1,14 @@
 package gr.ste.presentation.widgets;
 
+import gr.ste.domain.entities.Position;
 import gr.ste.domain.entities.Ship;
 import javafx.geometry.Orientation;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +62,13 @@ public class BattleshipGridPane extends GridPane {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+    }
+
+    public void add(Position targetPosition) {
+        Rectangle r = new Rectangle(50.0,50.0);
+        r.setFill(Color.GRAY);
+        r.setOpacity(0.6);
+        add(r, targetPosition.getY(), targetPosition.getX());
     }
 
     public void setBackgroundImage(String imageFilePath) throws IOException {

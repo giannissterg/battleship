@@ -1,9 +1,6 @@
 package gr.ste.domain;
 
-import gr.ste.domain.entities.Board;
-import gr.ste.domain.entities.Player;
-import gr.ste.domain.entities.Position;
-import gr.ste.domain.entities.Ship;
+import gr.ste.domain.entities.*;
 import gr.ste.presentation.events.MoveEnteredEvent;
 
 import java.io.Serializable;
@@ -13,8 +10,9 @@ import java.util.Random;
 import java.util.Stack;
 
 public class BattleshipGame implements Serializable {
-    public final List<Player> players;
-    public int currentPlayerId;
+    private final List<Player> players;
+    private int currentPlayerId;
+    private int round;
 
     public BattleshipGame(Player player1, Player player2) {
         this.players = new ArrayList<>(2);
@@ -24,15 +22,18 @@ public class BattleshipGame implements Serializable {
     }
 
     public Player findPlayerById(int playerId) {
-        assert(playerId <= players.size());
+        assert(playerId < players.size());
         return this.players.get(playerId);
     }
 
     public Player getCurrentPlayer() {
-        return this.players.get(currentPlayerId);
+        return players.get(currentPlayerId);
     }
 
-    boolean isPlayerEliminated(int playerId) {
+    public List<Player> getPlayers() { return players; }
+    public int getNumberOfPlayers() { return players.size(); }
+
+    public boolean isPlayerEliminated(int playerId) {
         for(Ship ship : players.get(playerId).getBoard().ships) {
             if(!ship.isSunk()) {
                return false;
@@ -43,7 +44,7 @@ public class BattleshipGame implements Serializable {
     }
 
     public MoveEnteredEvent playRound() {
-        Player currentPlayer = findPlayerById(currentPlayerId);
+        Player currentPlayer = getCurrentPlayer();
         if(currentPlayer.isNPC()) {
             int enemyId = selectRandomEnemy(currentPlayerId);
             Position targetPosition = selectTargetPosition(currentPlayerId, enemyId);
@@ -65,21 +66,26 @@ public class BattleshipGame implements Serializable {
 
     public Position selectTargetPosition(int playerId, int enemyId) {
         Random rand = new Random();
-
         Position targetPosition;
-
-        Stack<Position> pastMoves = players.get(playerId).getSuccessfulHits();
+        Stack<Move> pastMoves = players.get(playerId).getPastMoves();
         if(!pastMoves.isEmpty()) {
-            Position lastSuccessfulMove = pastMoves.peek();
+            Move lastMove = pastMoves.peek();
+//            while(lastMove.getTargetId() != enemyId || !lastMove.isHit()) {
+//                pastMoves.pop();
+//                lastMove = pastMoves.peek();
+//            }
             int randomDirection = rand.nextInt(4);
             if(randomDirection == 0) {
-                targetPosition = new Position(lastSuccessfulMove.getX(), lastSuccessfulMove.getY() - 1);
+                targetPosition = new Position(lastMove.getX(), lastMove.getY() - 1);
             } else if(randomDirection == 1) {
-                targetPosition = new Position(lastSuccessfulMove.getX() + 1, lastSuccessfulMove.getY());
+                targetPosition = new Position(lastMove.getX() + 1, lastMove.getY());
             } else if(randomDirection == 2) {
-                targetPosition = new Position(lastSuccessfulMove.getX(), lastSuccessfulMove.getY() + 1);
+                targetPosition = new Position(lastMove.getX(), lastMove.getY() + 1);
             } else {
-                targetPosition = new Position(lastSuccessfulMove.getX() - 1, lastSuccessfulMove.getY());
+                targetPosition = new Position(lastMove.getX() - 1, lastMove.getY());
+            }
+            while(pastMoves.contains(targetPosition)) {
+                targetPosition = selectTargetPosition(playerId, enemyId);
             }
         } else {
             Board enemyBoard = players.get(enemyId).getBoard();
@@ -90,11 +96,44 @@ public class BattleshipGame implements Serializable {
         return targetPosition;
     }
 
+    public void play(int targetPlayerId, Position target) {
+        Player currentPlayer = players.get(currentPlayerId);
+        Player targetPlayer = players.get(targetPlayerId);
+
+        boolean hitShip = false;
+        int reward = 0;
+        for (Ship enemyShip : targetPlayer.getBoard().ships) {
+            for (ShipPosition shipPart : enemyShip.getPositions()) {
+                if (target.equals(shipPart)) {
+                    hitShip = true;
+                    reward += enemyShip.getDamage();
+
+                    shipPart.setShipStatus(ShipStatus.damaged);
+                    if(enemyShip.isSunk()) {
+                        reward += enemyShip.getSankScore();
+                        targetPlayer.getBoard().ships.remove(enemyShip);
+                    }
+                    break;
+                }
+            }
+        }
+
+        Move moveMade = new Move(target, hitShip, targetPlayer.getId());
+        if(!hitShip) {
+            targetPlayer.getBoard().addMissedShot(target);
+        } else {
+            currentPlayer.reward(reward);
+        }
+        currentPlayer.addMove(moveMade);
+
+        nextPlayer();
+    }
+
     public void nextPlayer() {
         currentPlayerId = (currentPlayerId + 1) % players.size();
     }
 
     public boolean hasGameEnded() {
-        return players.size() == 1;
+        return players.size() == 1 || round >= 40;
     }
 }

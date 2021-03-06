@@ -1,5 +1,7 @@
 gr/ste/presentation/events/BattleshipGameEvent.java
  gr.ste.presentation.events.BattleshipGameEvent
+gr/ste/domain/exceptions/MoveOutOfBoundsException.java
+ gr.ste.domain.exceptions.MoveOutOfBoundsException
 gr/ste/domain/base/Result.java
  gr.ste.domain.base.Result
 gr/ste/domain/entities/Ship.java
@@ -12,10 +14,14 @@ gr/ste/domain/entities/ShipPosition.java
  gr.ste.domain.entities.ShipPosition
 gr/ste/data/GameRepositoryImpl.java
  gr.ste.data.GameRepositoryImpl
-gr/ste/domain/mappers/ShipMapper.java
- gr.ste.domain.mappers.ShipMapper
+gr/ste/presentation/widgets/BattleshipGridPane.java
+ gr.ste.presentation.widgets.BattleshipGridPane
+gr/ste/presentation/controllers/StartMenuController.java
+ gr.ste.presentation.controllers.StartMenuController
 gr/ste/presentation/view_handlers/BattleshipApplicationViewHandler.java
  gr.ste.presentation.view_handlers.BattleshipApplicationViewHandler
+gr/ste/domain/exceptions/InvalidScenarioException.java
+ gr.ste.domain.exceptions.InvalidScenarioException
 gr/ste/domain/entities/Player.java
  gr.ste.domain.entities.Player
 gr/ste/domain/repositories/GameRepository.java
@@ -36,6 +42,8 @@ gr/ste/domain/exceptions/OversizeException.java
  gr.ste.domain.exceptions.OversizeException
 gr/ste/domain/base/Mapper.java
  gr.ste.domain.base.Mapper
+gr/ste/domain/base/ListMapper.java
+ gr.ste.domain.base.ListMapper
 gr/ste/presentation/view_handlers/ViewHandler.java
  gr.ste.presentation.view_handlers.ViewHandler
 gr/ste/domain/BattleshipGame.java
@@ -44,8 +52,6 @@ gr/ste/domain/entities/Board.java
  gr.ste.domain.entities.Board
 gr/ste/domain/exceptions/InvalidCountException.java
  gr.ste.domain.exceptions.InvalidCountException
-gr/ste/domain/base/ListMapper.java
- gr.ste.domain.base.ListMapper
 gr/ste/domain/entities/Carrier.java
  gr.ste.domain.entities.Carrier
 gr/ste/presentation/events/MoveEnteredEvent.java
@@ -58,17 +64,23 @@ gr/ste/presentation/widgets/Tile.java
  gr.ste.presentation.widgets.Tile
 gr/ste/presentation/di/DependencyInjection.java
  gr.ste.presentation.di.DependencyInjection
+gr/ste/domain/entities/Move.java
+ gr.ste.domain.entities.Move
 gr/ste/presentation/windows/BattleshipGameWindow.java
  gr.ste.presentation.windows.BattleshipGameWindow
 gr/ste/domain/entities/PlayerType.java
  gr.ste.domain.entities.PlayerType
+gr/ste/presentation/windows/StartWindow.java
+ gr.ste.presentation.windows.StartWindow
 gr/ste/BattleshipApplication.java
  gr.ste.BattleshipApplication
 gr/ste/domain/entities/Cruiser.java
  gr.ste.domain.entities.Cruiser
+gr/ste/domain/mappers/ShipMapper.java
+ gr.ste.domain.mappers.ShipMapper
+gr/ste/presentation/BattleshipViewModel.java
+ gr.ste.presentation.BattleshipViewModel
+gr/ste/presentation/controllers/BattleshipController.java
+ gr.ste.presentation.controllers.BattleshipController
 gr/ste/Main.java
  gr.ste.Main
-gr/ste/presentation/widgets/BattleshipGridPane.java
- gr.ste.presentation.widgets.BattleshipGridPane
-gr/ste/presentation/controllers/PlayerController.java
- gr.ste.presentation.controllers.PlayerController
