@@ -2,6 +2,7 @@ package gr.ste.presentation.widgets;
 
 import gr.ste.domain.entities.Position;
 import gr.ste.domain.entities.Ship;
+import gr.ste.presentation.utilities.PresentationUtilities;
 import javafx.geometry.Orientation;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -70,28 +71,26 @@ public class BattleshipGridPane extends GridPane {
         add(r, targetPosition.getX(), targetPosition.getY());
     }
 
-    public void setBackgroundImage(String imageFilePath) throws IOException {
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(imageFilePath)) {
-            if (is != null) {
-                BackgroundSize backgroundSize = new BackgroundSize(
-                        1.0,
-                        1.0,
-                        true,
-                        true,
-                        true,
-                        false
-                );
-                BackgroundImage gridBackgroundImage = new BackgroundImage(
-                        new Image(is),
-                        BackgroundRepeat.ROUND,
-                        BackgroundRepeat.SPACE,
-                        BackgroundPosition.CENTER,
-                        backgroundSize
-                );
-                Background gridBackground = new Background(gridBackgroundImage);
-                setBackground(gridBackground);
-            }
-        }
+    public void setBackgroundImage(String imageFilePath) {
+        Image image = PresentationUtilities.loadImage(imageFilePath);
+        assert image != null;
+        BackgroundSize backgroundSize = new BackgroundSize(
+                1.0,
+                1.0,
+                true,
+                true,
+                true,
+                false
+        );
+        BackgroundImage gridBackgroundImage = new BackgroundImage(
+                image,
+                BackgroundRepeat.ROUND,
+                BackgroundRepeat.SPACE,
+                BackgroundPosition.CENTER,
+                backgroundSize
+        );
+        Background gridBackground = new Background(gridBackgroundImage);
+        setBackground(gridBackground);
     }
 
     public Tile getTile(int x, int y) {

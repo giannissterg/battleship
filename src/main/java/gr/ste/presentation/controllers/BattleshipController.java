@@ -5,13 +5,13 @@ import gr.ste.domain.entities.Position;
 import gr.ste.domain.entities.Ship;
 import gr.ste.domain.exceptions.InvalidScenarioException;
 import gr.ste.presentation.events.MoveEnteredEvent;
+import gr.ste.presentation.utilities.PresentationUtilities;
 import gr.ste.presentation.view_models.BattleshipViewModel;
 import gr.ste.presentation.widgets.BattleshipGridPane;
 import gr.ste.presentation.widgets.BattleshipMenuItem;
 import gr.ste.presentation.widgets.Tile;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -64,32 +64,29 @@ public class BattleshipController implements Initializable {
     }
 
     private void initView() {
-         MenuBar gameMenuBar = createMenuBar();
-         root.getChildren().add(0, gameMenuBar);
+        MenuBar gameMenuBar = createMenuBar();
+        root.getChildren().add(0, gameMenuBar);
 
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("images/map.jpg")) {
-            if (is != null) {
-                BackgroundSize backgroundSize = new BackgroundSize(
-                        1.0,
-                        1.0,
-                        true,
-                        true,
-                        true,
-                        false
-                );
-                BackgroundImage gameBackgroundImage = new BackgroundImage(
-                        new Image(is),
-                        BackgroundRepeat.ROUND,
-                        BackgroundRepeat.SPACE,
-                        BackgroundPosition.CENTER,
-                        backgroundSize
-                );
-                Background gameBackground = new Background(gameBackgroundImage);
-                root.setBackground(gameBackground);
-            }
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+        Image image = PresentationUtilities.loadImage("images/map.jpg");
+        assert image != null;
+        BackgroundSize backgroundSize = new BackgroundSize(
+                1.0,
+                1.0,
+                true,
+                true,
+                true,
+                false
+        );
+        BackgroundImage gameBackgroundImage = new BackgroundImage(
+                image,
+                BackgroundRepeat.ROUND,
+                BackgroundRepeat.SPACE,
+                BackgroundPosition.CENTER,
+                backgroundSize
+        );
+
+        Background gameBackground = new Background(gameBackgroundImage);
+        root.setBackground(gameBackground);
         xCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.xTargetCoordinateProperty());
         yCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.yTargetCoordinateProperty());
 
@@ -175,29 +172,8 @@ public class BattleshipController implements Initializable {
 
     private BattleshipGridPane createGrid() {
         BattleshipGridPane gridPane = new BattleshipGridPane(Board.WIDTH, Board.HEIGHT, Board.WIDTH * 40, Board.HEIGHT * 40);
-        try {
-            gridPane.setBackgroundImage("images/sea.png");
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+        gridPane.setBackgroundImage("images/sea.png");
         return gridPane;
-    }
-
-    private TextInputDialog createDialog(String textDefaultValue, String title, String headerText, String contentText, Node graphic) {
-        TextInputDialog dialog = new TextInputDialog(textDefaultValue);
-        dialog.setTitle(title);
-        dialog.setHeaderText(headerText);
-        dialog.setContentText(contentText);
-        dialog.setGraphic(graphic);
-        return dialog;
-    }
-
-    private void showAlert(String contentText) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        // bind content text
-        alert.setContentText(contentText);
-        // show the dialog
-        alert.show();
     }
 
     @FXML
@@ -231,6 +207,21 @@ public class BattleshipController implements Initializable {
                 showAlert(e.getMessage());
             }
         }
+    }
+
+    private TextInputDialog createDialog(String textDefaultValue, String title, String headerText, String contentText, Node graphic) {
+        TextInputDialog dialog = new TextInputDialog(textDefaultValue);
+        dialog.setTitle(title);
+        dialog.setHeaderText(headerText);
+        dialog.setContentText(contentText);
+        dialog.setGraphic(graphic);
+        return dialog;
+    }
+
+    private void showAlert(String contentText) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setContentText(contentText);
+        alert.show();
     }
 
     private MenuBar createMenuBar() {

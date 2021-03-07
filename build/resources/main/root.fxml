@@ -25,12 +25,6 @@
 <!--            <MenuItem text="About" />-->
 <!--        </Menu>-->
 <!--    </MenuBar>-->
-   <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
-      <children>
-         <Label fx:id="invalidMoveLabel" alignment="CENTER" text="Please provide a valid move" textFill="RED">
-            <font>
-               <Font name="Blackadder ITC" size="26.0" />
-            </font></Label>
       <!--    <HBox fx:id="horizontalBox">-->
       <!--        <GridPane fx:id="myGridPane" alignment="CENTER">-->
       <!--            <columnConstraints>-->
@@ -85,28 +79,33 @@
       <!--            </rowConstraints>-->
       <!--        </GridPane>-->
       <!--    </HBox>-->
-          <HBox fx:id="bottomHBox" alignment="CENTER">
-              <TextField promptText="x:" fx:id="xCoordinateTextField">
-                 <HBox.margin>
-                     <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                 </HBox.margin>
-               <opaqueInsets>
-                  <Insets />
-               </opaqueInsets>
-              </TextField>
-              <TextField fx:id="yCoordinateTextField" promptText="y:">
-                 <HBox.margin>
-                     <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                 </HBox.margin>
-              </TextField>
-              <Button fx:id="fireButton" mnemonicParsing="false" onMouseClicked="#fire" text="Fire" />
-            <VBox.margin>
-               <Insets />
-            </VBox.margin>
-            <opaqueInsets>
-               <Insets />
-            </opaqueInsets>
-          </HBox>
-      </children>
-   </VBox>
+    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+        <Label fx:id="invalidMoveLabel" alignment="CENTER" text="Please provide a valid move" textFill="RED">
+           <font>
+               <Font name="Blackadder ITC" size="26.0"/>
+           </font>
+        </Label>
+        <HBox fx:id="bottomHBox" alignment="CENTER">
+            <TextField promptText="x:" fx:id="xCoordinateTextField">
+                <HBox.margin>
+                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+                </HBox.margin>
+                <opaqueInsets>
+                    <Insets/>
+                </opaqueInsets>
+            </TextField>
+            <TextField fx:id="yCoordinateTextField" promptText="y:">
+                <HBox.margin>
+                    <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+                </HBox.margin>
+            </TextField>
+            <Button fx:id="fireButton" mnemonicParsing="false" onMouseClicked="#fire" text="Fire"/>
+          <VBox.margin>
+              <Insets/>
+          </VBox.margin>
+          <opaqueInsets>
+              <Insets/>
+          </opaqueInsets>
+        </HBox>
+    </VBox>
 </VBox>
