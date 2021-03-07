@@ -1,15 +1,20 @@
 package gr.ste.presentation.controllers;
 
+import gr.ste.BattleshipApplication;
+import gr.ste.domain.entities.Battleship;
 import gr.ste.domain.entities.Board;
 import gr.ste.domain.entities.Position;
 import gr.ste.domain.entities.Ship;
 import gr.ste.domain.exceptions.InvalidScenarioException;
 import gr.ste.presentation.events.MoveEnteredEvent;
 import gr.ste.presentation.utilities.PresentationUtilities;
+import gr.ste.presentation.view_handlers.BattleshipApplicationViewHandler;
+import gr.ste.presentation.view_handlers.ViewHandler;
 import gr.ste.presentation.view_models.BattleshipViewModel;
 import gr.ste.presentation.widgets.BattleshipGridPane;
 import gr.ste.presentation.widgets.BattleshipMenuItem;
 import gr.ste.presentation.widgets.Tile;
+import javafx.animation.FadeTransition;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,6 +33,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,39 +60,33 @@ public class BattleshipController implements Initializable {
 
     private final BattleshipViewModel battleshipViewModel;
 
-    public BattleshipController(BattleshipViewModel battleshipViewModel) {
+    private final BattleshipApplication applicationInstance;
+
+    public BattleshipController(BattleshipViewModel battleshipViewModel, BattleshipApplication applicationInstance) {
         this.battleshipViewModel = battleshipViewModel;
+        this.applicationInstance = applicationInstance;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        root.setOpacity(0.0f);
+        fadeIn();
         initView();
+        bindProperties();
     }
 
     private void initView() {
+        // MenuBar
         MenuBar gameMenuBar = createMenuBar();
         root.getChildren().add(0, gameMenuBar);
 
         Image image = PresentationUtilities.loadImage("images/map.jpg");
         assert image != null;
-        BackgroundSize backgroundSize = new BackgroundSize(
-                1.0,
-                1.0,
-                true,
-                true,
-                true,
-                false
-        );
-        BackgroundImage gameBackgroundImage = new BackgroundImage(
-                image,
-                BackgroundRepeat.ROUND,
-                BackgroundRepeat.SPACE,
-                BackgroundPosition.CENTER,
-                backgroundSize
-        );
-
+        BackgroundSize backgroundSize = new BackgroundSize(1.0, 1.0, true, true, true, false);
+        BackgroundImage gameBackgroundImage = new BackgroundImage(image, BackgroundRepeat.ROUND, BackgroundRepeat.SPACE, BackgroundPosition.CENTER, backgroundSize);
         Background gameBackground = new Background(gameBackgroundImage);
         root.setBackground(gameBackground);
+
         xCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.xTargetCoordinateProperty());
         yCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.yTargetCoordinateProperty());
 
@@ -109,7 +109,6 @@ public class BattleshipController implements Initializable {
         fireButton.disableProperty().bind(battleshipViewModel.getShowInvalidMoveLabel().not().or(battleshipViewModel.hasLoadedGameProperty().not()));
 
         HBox hbox = new HBox();
-
         for(int i = 0; i < battleshipViewModel.getNumberOfPlayers(); i++) {
             Label nameLabel = new Label();
             Label scoreLabel = new Label();
@@ -121,10 +120,13 @@ public class BattleshipController implements Initializable {
             scoreLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 26));
 
             BattleshipGridPane playerGrid = createGrid();
-            Pane p = new Pane();
-            p.setPrefSize(0, 64);
+
+            Pane spacer = new Pane();
+            spacer.setPrefSize(0, 64);
 
             Tile emptyTile = new Tile(40, 40);
+
+
             HBox xCoordinates = new HBox(emptyTile);
             for(int x = 0; x < Board.WIDTH; x++) {
                 Tile tile = new Tile(40, 40);
@@ -144,7 +146,7 @@ public class BattleshipController implements Initializable {
             }
             HBox gridWithCoords = new HBox(yCoordinates, playerGrid);
 
-            VBox playerScoreBoard = new VBox(nameLabel, scoreLabel, p, xCoordinates, gridWithCoords);
+            VBox playerScoreBoard = new VBox(nameLabel, scoreLabel, spacer, xCoordinates, gridWithCoords);
             if(i % 2 == 0) {
                 playerScoreBoard.setAlignment(Pos.CENTER_LEFT);
             } else {
@@ -168,6 +170,18 @@ public class BattleshipController implements Initializable {
         hbox.setSpacing(100.0);
 
         root.getChildren().add(1, hbox);
+    }
+
+    private void bindProperties() {
+
+    }
+
+    private void fadeIn() {
+        FadeTransition fadeTransition = new FadeTransition(Duration.millis(1000), root);
+        fadeTransition.setFromValue(0.0);
+        fadeTransition.setToValue(1.0);
+        //fadeTransition.setOnFinished(actionEvent -> handleLoadClickedEvent(actionEvent));
+        fadeTransition.play();
     }
 
     private BattleshipGridPane createGrid() {
