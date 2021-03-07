@@ -3,7 +3,6 @@ package gr.ste.presentation.widgets;
 import gr.ste.domain.entities.Position;
 import gr.ste.domain.entities.Ship;
 import javafx.geometry.Orientation;
-import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -15,13 +14,13 @@ import java.io.InputStream;
 
 public class BattleshipGridPane extends GridPane {
 
-    private int rows;
-    private int columns;
+    private final int rows;
+    private final int columns;
 
-    private double width;
-    private double height;
+    private final double width;
+    private final double height;
 
-    private Tile[] tiles;
+    private final Tile[] tiles;
 
     public BattleshipGridPane(int columns, int rows, double width, double height) {
         this.columns = columns;
@@ -52,11 +51,11 @@ public class BattleshipGridPane extends GridPane {
                 if(ship.getOrientation() == Orientation.HORIZONTAL) {
                     shipImageView.setFitWidth(width / columns * ship.getSpace());
                     shipImageView.setFitHeight(height / rows);
-                    add(shipImageView, ship.getPositions().get(0).getY(), ship.getPositions().get(0).getX(), ship.getSpace(), 1);
+                    add(shipImageView, ship.getPositions().get(0).getX(), ship.getPositions().get(0).getY(), ship.getSpace(), 1);
                 } else {
                     shipImageView.setFitWidth(width / columns);
                     shipImageView.setFitHeight(height / rows * ship.getSpace());
-                    add(shipImageView, ship.getPositions().get(0).getY(), ship.getPositions().get(0).getX(), 1, ship.getSpace());
+                    add(shipImageView, ship.getPositions().get(0).getX(), ship.getPositions().get(0).getY(), 1, ship.getSpace());
                 }
             }
         } catch (IOException exception) {
@@ -65,10 +64,10 @@ public class BattleshipGridPane extends GridPane {
     }
 
     public void add(Position targetPosition) {
-        Rectangle r = new Rectangle(50.0,50.0);
+        Rectangle r = new Rectangle(40.0,40.0);
         r.setFill(Color.GRAY);
         r.setOpacity(0.6);
-        add(r, targetPosition.getY(), targetPosition.getX());
+        add(r, targetPosition.getX(), targetPosition.getY());
     }
 
     public void setBackgroundImage(String imageFilePath) throws IOException {
@@ -99,15 +98,15 @@ public class BattleshipGridPane extends GridPane {
         return tiles[x + y * rows];
     }
 
-    /**
-     * Unhighlight all cells
-     */
-//    public void unhighlight() {
-//        for( int row=0; row < rows; row++) {
-//            for( int col=0; col < columns; col++) {
-//                tiles[row][col].unhighlight();
-//            }
-//        }
-//    }
+//    /**
+//     * Unhighlight all cells
+//     */
+////    public void unhighlight() {
+////        for( int row=0; row < rows; row++) {
+////            for( int col=0; col < columns; col++) {
+////                tiles[row][col].unhighlight();
+////            }
+////        }
+////    }
 }
 

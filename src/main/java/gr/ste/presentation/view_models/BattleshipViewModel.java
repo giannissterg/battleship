@@ -1,12 +1,12 @@
-package gr.ste.presentation;
+package gr.ste.presentation.view_models;
 
 import gr.ste.domain.BattleshipGame;
-import gr.ste.domain.base.Result;
 import gr.ste.domain.entities.Board;
 import gr.ste.domain.entities.Player;
 import gr.ste.domain.entities.Position;
 import gr.ste.domain.entities.Ship;
 import gr.ste.domain.exceptions.InvalidScenarioException;
+import gr.ste.domain.exceptions.ShipException;
 import gr.ste.domain.repositories.GameRepository;
 import gr.ste.presentation.events.BattleshipGameEvent;
 import gr.ste.presentation.events.MoveEnteredEvent;
@@ -15,6 +15,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +35,7 @@ public class BattleshipViewModel {
     private final List<ObservableList<Position>> moves;
     private final List<ObservableList<Ship>> playerShips;
 
-    private final StringProperty invalidScenario;
     private final StringProperty invalidMove;
-
     private final ReadOnlyBooleanWrapper showInvalidMoveLabel;
     private final BooleanProperty hasLoadedGame;
 
@@ -68,7 +67,6 @@ public class BattleshipViewModel {
             moves.add(FXCollections.observableArrayList());
         }
 
-        invalidScenario = new SimpleStringProperty("Something went wrong");
         invalidMove = new SimpleStringProperty();
         showInvalidMoveLabel = new ReadOnlyBooleanWrapper();
         showInvalidMoveLabel.bind(invalidMove.isEmpty());
@@ -84,8 +82,8 @@ public class BattleshipViewModel {
             invalidMove.setValue(null);
         } else {
             try {
-                int coord = Integer.parseInt(newValue);
-                if (coord < 0 || coord > Board.WIDTH - 1) {
+                int coordinate = Integer.parseInt(newValue);
+                if (coordinate < 0 || coordinate > Board.WIDTH - 1) {
                     invalidMove.setValue("Coordinate must be in the range 0-9");
                 } else {
                     invalidMove.setValue(null);
@@ -101,8 +99,8 @@ public class BattleshipViewModel {
             invalidMove.setValue(null);
         } else {
             try {
-                int coord = Integer.parseInt(newValue);
-                if (coord < 0 || coord > Board.HEIGHT - 1) {
+                int coordinate = Integer.parseInt(newValue);
+                if (coordinate < 0 || coordinate > Board.HEIGHT - 1) {
                     invalidMove.setValue("Coordinate must be in the range 0-9");
                 } else {
                     invalidMove.setValue(null);
@@ -114,12 +112,11 @@ public class BattleshipViewModel {
     }
 
     public void loadGameState(String scenarioId) throws InvalidScenarioException {
-        URL playerScenarioUrl = getClass().getClassLoader().getResource("player_" + scenarioId + ".txt");
-        URL enemyScenarioUrl = getClass().getClassLoader().getResource("enemy_" + scenarioId + ".txt");
+        URL playerScenarioUrl = getClass().getClassLoader().getResource("medialab/player_" + scenarioId + ".txt");
+        URL enemyScenarioUrl = getClass().getClassLoader().getResource("medialab/enemy_" + scenarioId + ".txt");
         if(playerScenarioUrl != null && enemyScenarioUrl != null) {
-            Result<BattleshipGame> domainResponse = gameRepository.loadScenario(playerScenarioUrl.getFile(), enemyScenarioUrl.getFile());
-            if (!domainResponse.hasError()) {
-                this.game = domainResponse.getValue();
+            try {
+                this.game = gameRepository.loadScenario(playerScenarioUrl.getFile(), enemyScenarioUrl.getFile());
 
                 numberOfPlayers.setValue(game.getNumberOfPlayers());
                 currentPlayer.setValue((new Random()).nextInt(game.getNumberOfPlayers()));
@@ -130,13 +127,12 @@ public class BattleshipViewModel {
                     playerShips.get(player.getId()).setAll(player.getBoard().ships);
                     moves.get(player.getId()).setAll(player.getBoard().getMissedShots());
                 }
-            } else {
-                invalidScenario.setValue("An invalid scenario id has been provided");
-                throw new InvalidScenarioException();
+            } catch (ShipException | IOException e) {
+                e.printStackTrace();
+                throw new InvalidScenarioException(e.getMessage());
             }
         } else {
-            invalidScenario.setValue("An invalid scenario id has been provided");
-            throw new InvalidScenarioException();
+            throw new InvalidScenarioException("An invalid scenario id has been provided");
         }
     }
 
@@ -173,16 +169,8 @@ public class BattleshipViewModel {
         return numberOfPlayers.get();
     }
 
-    public IntegerProperty getNumberOfPlayersProperty() {
-        return numberOfPlayers;
-    }
-
     public IntegerProperty getCurrentPlayerProperty() {
         return currentPlayer;
-    }
-
-    public StringProperty getInvalidScenarioProperty() {
-        return invalidScenario;
     }
 
     public StringProperty getInvalidMoveProperty() {

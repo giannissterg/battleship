@@ -2,11 +2,18 @@ package gr.ste.data;
 
 import gr.ste.domain.BattleshipGame;
 import gr.ste.domain.base.ListMapper;
-import gr.ste.domain.base.Result;
-import gr.ste.domain.entities.*;
+import gr.ste.domain.entities.Board;
+import gr.ste.domain.entities.Player;
+import gr.ste.domain.entities.PlayerType;
+import gr.ste.domain.entities.Ship;
+import gr.ste.domain.exceptions.AdjacentTilesException;
+import gr.ste.domain.exceptions.OverlapTilesException;
+import gr.ste.domain.exceptions.OversizeException;
+import gr.ste.domain.exceptions.ShipException;
 import gr.ste.domain.repositories.GameRepository;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,40 +27,36 @@ public class GameRepositoryImpl implements GameRepository {
     }
 
     @Override
-    public Result<BattleshipGame> loadScenario(String filename, String enemyFilename) {
-        try {
-            final List<String[]> dataResponse = csvReader.read(filename);
-            final List<Ship> ships = shipListMapper.toDomain(dataResponse);
+    public BattleshipGame loadScenario(String filename, String enemyFilename) throws ShipException, IOException {
+        final List<String[]> dataResponse = Collections.unmodifiableList(csvReader.read(filename));
+        final List<Ship> ships = Collections.unmodifiableList(shipListMapper.toDomain(dataResponse));
 
-            final List<String[]> enemyDataResponse = csvReader.read(enemyFilename);
-            final List<Ship> enemyShips = shipListMapper.toDomain(enemyDataResponse);
+        final List<String[]> enemyDataResponse = Collections.unmodifiableList(csvReader.read(enemyFilename));
+        final List<Ship> enemyShips = Collections.unmodifiableList(shipListMapper.toDomain(enemyDataResponse));
 
-            final Board playerBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, ships);
-            final Board enemyBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, enemyShips);
+        final Board playerBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, ships);
+        final Board enemyBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, enemyShips);
 
-//            if(playerBoard.shipsBoundsCheck() || enemyBoard.shipBoundsCheck()) {
-//                return Result.error("Ship position is out of bounds");
-//            }
-
-//            if(playerBoard.checkForOverlappingTiles()) {
-//                return Result.error("Two ships are overlapping");
-//            }
-//            if(playerBoard.checkForAdjacentTiles()) {
-//                return Result.error("Two ships are adjacent");
-//            }
-
-            final Player player1 = new Player(0,"Giannis", playerBoard, PlayerType.human);
-            final Player player2 = new Player(1,"Kostas", enemyBoard, PlayerType.npc);
-
-            return Result.ok(new BattleshipGame(player1, player2));
-        } catch (IOException exception) {
-            exception.printStackTrace();
-            return Result.error("File could not be read");
+        if(!playerBoard.isInside(ships) || !enemyBoard.isInside(enemyShips)) {
+            throw new OversizeException("Ship position is out of bounds");
         }
+
+        if(playerBoard.checkForOverlappingTiles() || enemyBoard.checkForOverlappingTiles()) {
+            throw new OverlapTilesException("Two ships are overlapping");
+        }
+
+        if(playerBoard.checkForAdjacentTiles() || enemyBoard.checkForOverlappingTiles()) {
+            throw new AdjacentTilesException("Two ships are adjacent");
+        }
+
+        final Player player1 = new Player(0,"Giannis", playerBoard, PlayerType.human);
+        final Player player2 = new Player(1,"Kostas", enemyBoard, PlayerType.npc);
+
+        return new BattleshipGame(player1, player2);
     }
 
     @Override
-    public Result<Boolean> saveScenario(String saveFileName) {
+    public Boolean saveScenario(String saveFileName) {
         return null;
     }
 }

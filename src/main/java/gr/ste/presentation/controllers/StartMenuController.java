@@ -28,6 +28,10 @@ public class StartMenuController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        initView();
+    }
+
+    private void initView() {
 
     }
 

@@ -9,28 +9,17 @@ import java.util.List;
 
 public class CsvReader {
     public List<String[]> read(String fileName) throws IOException {
-        FileReader fileReader = null;
-        try {
-            fileReader = new FileReader(fileName);
-        } catch (FileNotFoundException exception) {
-            exception.printStackTrace();
-            throw exception;
-        }
-
+        FileReader fileReader = new FileReader(fileName);
         BufferedReader csvReader = new BufferedReader(fileReader);
-
         List<String[]> contents = new ArrayList<>();
-        try {
-            String row;
-            while ((row = csvReader.readLine()) != null) {
-                String[] data = row.split(",");
-                contents.add(data);
-            }
-            csvReader.close();
-        } catch (IOException exception) {
-            exception.printStackTrace();
-            throw exception;
+
+        String row;
+        while ((row = csvReader.readLine()) != null) {
+            String[] data = row.split(",");
+            contents.add(data);
         }
+        csvReader.close();
+
         return contents;
     }
 }

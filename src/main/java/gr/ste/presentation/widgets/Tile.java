@@ -8,7 +8,7 @@ public class Tile extends StackPane {
     public double height;
 
     public Tile(double width, double height) {
-        setPrefSize(width, height);
+        setMinSize(width, height);
         //setOpacity(0.9);
     }
 

@@ -6,7 +6,7 @@ import gr.ste.domain.base.ListMapper;
 import gr.ste.domain.entities.Ship;
 import gr.ste.domain.mappers.ShipMapper;
 import gr.ste.domain.repositories.GameRepository;
-import gr.ste.presentation.BattleshipViewModel;
+import gr.ste.presentation.view_models.BattleshipViewModel;
 import gr.ste.presentation.controllers.BattleshipController;
 import gr.ste.presentation.controllers.StartMenuController;
 import gr.ste.presentation.di.DependencyInjection;
@@ -23,9 +23,7 @@ public class Main {
 //        DependencyInjection.setBundle(ResourceBundle.getBundle("greetings", Locale.ENGLISH));
 
         //create factories - here we'll just create one!
-        Callback<Class<?>, Object> startMenuControllerFactory = param -> {
-            return new StartMenuController();
-        };
+        Callback<Class<?>, Object> startMenuControllerFactory = param -> new StartMenuController();
 
         Callback<Class<?>, Object> battleshipControllerFactory = param -> {
             final CsvReader csvReader = new CsvReader();

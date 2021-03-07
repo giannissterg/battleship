@@ -25,6 +25,10 @@ public class Position {
         return abs(x - other.getX()) + abs(y - other.getY());
     }
 
+    public Position add(Position other) {
+        return new Position(this.x + other.x, this.y + other.y);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

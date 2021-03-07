@@ -24,9 +24,9 @@ public class Ship {
         for (int i = 0; i < space; i++) {
             final ShipPosition shipPosition;
             if (orientation == Orientation.HORIZONTAL) {
-                shipPosition = new ShipPosition(position.getX(), position.getY() + i);
-            } else if (orientation == Orientation.VERTICAL) {
                 shipPosition = new ShipPosition(position.getX() + i, position.getY());
+            } else if (orientation == Orientation.VERTICAL) {
+                shipPosition = new ShipPosition(position.getX(), position.getY() + i);
             } else {
                 shipPosition = null;
             }
@@ -34,27 +34,19 @@ public class Ship {
         }
     }
 
-
-    public String getId() {
-        return id;
-    }
-
+    public String getId() { return id; }
     public int getSpace() {
         return space;
     }
-
     public Orientation getOrientation() {
         return orientation;
     }
-
     public int getDamage() {
         return damage;
     }
-
     public int getSankScore() {
         return sankScore;
     }
-
     public List<ShipPosition> getPositions() {
         return positions;
     }

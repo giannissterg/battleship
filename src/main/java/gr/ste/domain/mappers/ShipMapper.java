@@ -10,7 +10,11 @@ public class ShipMapper implements Mapper<Ship, String[]> {
     @Override
     public Ship toDomain(String[] data) {
         assert(data.length == 4);
-        final Position position = new Position(Integer.parseInt(data[1]), Integer.parseInt(data[2]));
+
+        final int x = Integer.parseInt(data[2]);
+        final int y = Integer.parseInt(data[1]);
+        final Position position = new Position(x, y);
+
         Orientation orientation = null;
         switch (data[3]) {
             case "1":
@@ -27,7 +31,7 @@ public class ShipMapper implements Mapper<Ship, String[]> {
         Ship ship = null;
         switch (data[0]) {
             case "1":
-                ship = new Carrier( UUID.randomUUID().toString(), position, orientation);
+                ship = new Carrier(UUID.randomUUID().toString(), position, orientation);
                 break;
             case "2":
                 ship = new Battleship(UUID.randomUUID().toString(), position, orientation);
