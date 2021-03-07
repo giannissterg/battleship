@@ -55,6 +55,8 @@ cmake-build-*/
 out/
 build/
 
+build/**
+
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
@@ -108,7 +110,7 @@ fabric.properties
 
 ### Java ###
 # Compiled class file
-*.class
+build/**/*.class
 
 # Log file
 *.log
