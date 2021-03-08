@@ -1,7 +1,10 @@
 package gr.ste.presentation.controllers;
 
 import gr.ste.BattleshipApplication;
-import gr.ste.domain.entities.*;
+import gr.ste.domain.entities.Board;
+import gr.ste.domain.entities.Move;
+import gr.ste.domain.entities.Position;
+import gr.ste.domain.entities.Ship;
 import gr.ste.domain.exceptions.InvalidScenarioException;
 import gr.ste.presentation.events.MoveEnteredEvent;
 import gr.ste.presentation.utilities.PresentationUtilities;
@@ -11,8 +14,6 @@ import gr.ste.presentation.widgets.BattleshipMenuItem;
 import gr.ste.presentation.widgets.Tile;
 import javafx.animation.FadeTransition;
 import javafx.beans.binding.Bindings;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -85,8 +86,8 @@ public class BattleshipController implements Initializable {
         Background gameBackground = new Background(gameBackgroundImage);
         root.setBackground(gameBackground);
 
-        xCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.xTargetCoordinateProperty());
-        yCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.yTargetCoordinateProperty());
+        xCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.gameState.xTargetCoordinate);
+        yCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.gameState.yTargetCoordinate);
 
         CornerRadii radius = new CornerRadii(64.0);
         Background textFieldBackground = new Background(new BackgroundFill(Color.TRANSPARENT, radius, Insets.EMPTY));
@@ -102,25 +103,25 @@ public class BattleshipController implements Initializable {
         fireButton.setBorder(textFieldBorder);
         fireButton.setTextFill(Color.BLACK);
 
-        invalidMoveLabel.textProperty().bind(battleshipViewModel.getInvalidMoveProperty());
-        invalidMoveLabel.visibleProperty().bind(battleshipViewModel.getShowInvalidMoveLabel().not());
-        fireButton.disableProperty().bind(battleshipViewModel.getShowInvalidMoveLabel().not().or(battleshipViewModel.hasLoadedGameProperty().not()));
+        invalidMoveLabel.textProperty().bind(battleshipViewModel.gameState.invalidMove);
+        invalidMoveLabel.visibleProperty().bind(battleshipViewModel.gameState.showInvalidMoveLabel.not());
+        fireButton.disableProperty().bind(battleshipViewModel.gameState.showInvalidMoveLabel.not().or(battleshipViewModel.gameState.hasLoadedGame.not()));
 
         Label roundLabel = new Label();
-        roundLabel.textProperty().bind(battleshipViewModel.getRoundsProperty());
+        roundLabel.textProperty().bind(Bindings.createStringBinding(() -> "Score: " + battleshipViewModel.gameState.rounds, battleshipViewModel.gameState.rounds);
         roundLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 32));
         roundLabel.setPadding(new Insets(40, 0, 0, 0));
 
         HBox hbox = new HBox();
-        for(int i = 0; i < battleshipViewModel.getNumberOfPlayers(); i++) {
+        for(int i = 0; i < battleshipViewModel.gameState.numberOfPlayers.get(); i++) {
             Label nameLabel = new Label();
             Label scoreLabel = new Label();
             Label hitPercentageLabel = new Label();
             int finalI = i;
-            hitPercentageLabel.textProperty().bind(Bindings.createStringBinding(() -> "Percentage: " + String.format("%.2f", battleshipViewModel.percentage.get(finalI).getValue()), battleshipViewModel.percentage.get(i)));
+            hitPercentageLabel.textProperty().bind(Bindings.createStringBinding(() -> "Percentage: " + String.format("%.2f", battleshipViewModel.gameState.playerStates.get(i).percentages.get(finalI).getValue()), battleshipViewModel.percentage.get(i)));
             hitPercentageLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 24));
 
-            nameLabel.textProperty().bindBidirectional(battleshipViewModel.getPlayerNameProperty(i));
+            nameLabel.textProperty().bindBidirectional(battleshipViewModel.gameState(i));
             scoreLabel.textProperty().bindBidirectional(battleshipViewModel.getPlayerScoreProperty(i));
 
             nameLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 28));
@@ -230,7 +231,7 @@ public class BattleshipController implements Initializable {
         Optional<String> result = dialog.showAndWait();
         if(result.isPresent()) {
             try {
-                battleshipViewModel.loadGameState(result.get());
+                battleshipViewModel.loadGame(result.get());
             } catch (InvalidScenarioException e) {
                 showAlert(e.getMessage());
             }

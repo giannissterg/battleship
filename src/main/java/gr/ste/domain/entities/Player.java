@@ -33,6 +33,31 @@ public class Player {
 //        }
 //    }
 
+    public Map<Integer, Double> computePercentages() {
+        Map<Integer, Double> percentages = new HashMap<>();
+        for (Map.Entry<Integer, Stack<Move>> entry : pastMovesMap.entrySet()) {
+            Stack<Move> moves = entry.getValue();
+            double percentage = 0.0;
+            int hits = 0;
+            int totalShots = 0;
+            for (Move move : moves) {
+                if (move.isHit()) {
+                    hits++;
+                }
+                totalShots++;
+            }
+            if(totalShots != 0) {
+                percentage = hits * 1.0 / totalShots;
+            }
+            percentages.put(entry.getKey(), percentage);
+        }
+        return percentages;
+    }
+
+    public Map<Integer, Stack<Move>> getMovesMap() {
+        return pastMovesMap;
+    }
+
     public Stack<Move> getPastMoves(int enemyId) {
         pastMovesMap.computeIfAbsent(enemyId, k -> new Stack<>());
         return pastMovesMap.get(enemyId);

@@ -3,30 +3,33 @@ package gr.ste.domain;
 import gr.ste.domain.entities.*;
 import gr.ste.presentation.events.MoveEnteredEvent;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class BattleshipGame implements Serializable {
+public class BattleshipGame {
     private final List<Player> players;
     private int currentPlayerId;
     private int round;
+    private boolean hasStarted;
 
     public BattleshipGame(Player player1, Player player2) {
         this.players = new ArrayList<>(2);
         this.players.add(player1);
         this.players.add(player2);
         this.currentPlayerId = (new Random()).nextInt(players.size());
+        this.hasStarted = false;
     }
 
     public BattleshipGame(List<Player> players) {
         this.players = players;
+        this.currentPlayerId = (new Random()).nextInt(players.size());
+        this.hasStarted = false;
     }
 
     public Player findPlayerById(int playerId) {
         assert(playerId < players.size());
-        return this.players.get(playerId);
+        return players.get(playerId);
     }
 
     public Player getCurrentPlayer() {
@@ -46,13 +49,13 @@ public class BattleshipGame implements Serializable {
         return true;
     }
 
-    public MoveEnteredEvent playRound() {
-        Player currentPlayer = getCurrentPlayer();
-        if(currentPlayer.isNPC()) {
-            NPCPlayer ai = (NPCPlayer)currentPlayer;
-            int enemyId = ai.selectRandomEnemy(players);
-            Position targetPosition = ai.selectTargetPosition(enemyId);
-            return new MoveEnteredEvent(targetPosition, enemyId);
+    public MoveEnteredEvent start() {
+        hasStarted = true;
+        Player startingPlayer = findPlayerById(currentPlayerId);
+        if (startingPlayer.isNPC()) {
+            NPCPlayer ai = (NPCPlayer) startingPlayer;
+            MoveEnteredEvent aiMove = ai.chooseMove(players);
+            return aiMove;
         } else {
             return null;
         }
@@ -107,7 +110,6 @@ public class BattleshipGame implements Serializable {
             currentPlayer.reward(reward);
         }
         currentPlayer.addMove(moveMade);
-
 
         round++;
         return true;
