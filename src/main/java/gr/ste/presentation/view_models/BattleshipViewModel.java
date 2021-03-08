@@ -140,12 +140,17 @@ public class BattleshipViewModel {
         if (event instanceof MoveEnteredEvent) {
             MoveEnteredEvent moveEnteredEvent = (MoveEnteredEvent) event;
 
-            game.play(moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition());
-            moves.get(moveEnteredEvent.getTargetPlayerId()).add(moveEnteredEvent.getTargetPosition());
-            playerScoreProperties.get(game.getCurrentPlayer().getId()).setValue("Score: " + game.getCurrentPlayer().getScore());
+            boolean couldPlayMove = game.play(moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition());
+            if(couldPlayMove) {
+                moves.get(moveEnteredEvent.getTargetPlayerId()).add(moveEnteredEvent.getTargetPosition());
+                playerScoreProperties.get(game.getCurrentPlayer().getId()).setValue("Score: " + game.getCurrentPlayer().getScore());
 
-            MoveEnteredEvent nextMoveTarget = game.playRound();
-            playMove(nextMoveTarget);
+                MoveEnteredEvent nextMoveTarget = game.playRound();
+                playMove(nextMoveTarget);
+                invalidMove.setValue(null);
+            } else {
+                invalidMove.setValue("You have already tried that location");
+            }
         }
     }
 

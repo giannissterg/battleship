@@ -125,7 +125,7 @@ public class Board {
         return adjacentTiles;
     }
 
-    private boolean isInside(Position position) {
+    public boolean isInside(Position position) {
         return position.getX() >= 0 && position.getX() < WIDTH && position.getY() >= 0 && position.getY() < HEIGHT;
     }
 

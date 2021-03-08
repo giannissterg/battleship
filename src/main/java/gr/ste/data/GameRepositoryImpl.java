@@ -2,10 +2,7 @@ package gr.ste.data;
 
 import gr.ste.domain.BattleshipGame;
 import gr.ste.domain.base.ListMapper;
-import gr.ste.domain.entities.Board;
-import gr.ste.domain.entities.Player;
-import gr.ste.domain.entities.PlayerType;
-import gr.ste.domain.entities.Ship;
+import gr.ste.domain.entities.*;
 import gr.ste.domain.exceptions.AdjacentTilesException;
 import gr.ste.domain.exceptions.OverlapTilesException;
 import gr.ste.domain.exceptions.OversizeException;
@@ -50,7 +47,7 @@ public class GameRepositoryImpl implements GameRepository {
         }
 
         final Player player1 = new Player(0,"Giannis", playerBoard, PlayerType.human);
-        final Player player2 = new Player(1,"Kostas", enemyBoard, PlayerType.npc);
+        final Player player2 = new NPCPlayer(1,"Kostas", enemyBoard);
 
         return new BattleshipGame(player1, player2);
     }

@@ -46,8 +46,9 @@ public class BattleshipGame implements Serializable {
     public MoveEnteredEvent playRound() {
         Player currentPlayer = getCurrentPlayer();
         if(currentPlayer.isNPC()) {
+            NPCPlayer ai = (NPCPlayer)currentPlayer;
             int enemyId = selectRandomEnemy(currentPlayerId);
-            Position targetPosition = selectTargetPosition(currentPlayerId, enemyId);
+            Position targetPosition = ai.selectTargetPosition(enemyId);
             MoveEnteredEvent move = new MoveEnteredEvent(targetPosition, enemyId);
             return move;
         } else {
@@ -64,41 +65,16 @@ public class BattleshipGame implements Serializable {
         return targetId;
     }
 
-    public Position selectTargetPosition(int playerId, int enemyId) {
-        Random rand = new Random();
-        Position targetPosition;
-        Stack<Move> pastMoves = players.get(playerId).getPastMoves();
-        if(!pastMoves.isEmpty()) {
-            Move lastMove = pastMoves.peek();
-//            while(lastMove.getTargetId() != enemyId || !lastMove.isHit()) {
-//                pastMoves.pop();
-//                lastMove = pastMoves.peek();
-//            }
-            int randomDirection = rand.nextInt(4);
-            if(randomDirection == 0) {
-                targetPosition = new Position(lastMove.getX(), lastMove.getY() - 1);
-            } else if(randomDirection == 1) {
-                targetPosition = new Position(lastMove.getX() + 1, lastMove.getY());
-            } else if(randomDirection == 2) {
-                targetPosition = new Position(lastMove.getX(), lastMove.getY() + 1);
-            } else {
-                targetPosition = new Position(lastMove.getX() - 1, lastMove.getY());
-            }
-            while(pastMoves.contains(targetPosition)) {
-                targetPosition = selectTargetPosition(playerId, enemyId);
-            }
-        } else {
-            Board enemyBoard = players.get(enemyId).getBoard();
-            int randomX = rand.nextInt(enemyBoard.getWidth());
-            int randomY = rand.nextInt(enemyBoard.getHeight());
-            targetPosition = new Position(randomX, randomY);
-        }
-        return targetPosition;
-    }
-
-    public void play(int targetPlayerId, Position target) {
+    public boolean play(int targetPlayerId, Position target) {
         Player currentPlayer = players.get(currentPlayerId);
         Player targetPlayer = players.get(targetPlayerId);
+
+        // Check if move is already played
+        for(Move move : currentPlayer.getPastMoves(targetPlayerId)) {
+            if(move.getX() == target.getX() && move.getY() == target.getY()) {
+                return false;
+            }
+        }
 
         boolean hitShip = false;
         int reward = 0;
@@ -107,11 +83,24 @@ public class BattleshipGame implements Serializable {
                 if (target.equals(shipPart)) {
                     hitShip = true;
                     reward += enemyShip.getDamage();
-
                     shipPart.setShipStatus(ShipStatus.damaged);
+                    if (currentPlayer.isNPC()) {
+                        NPCPlayer ai = (NPCPlayer) currentPlayer;
+                        EnemyShipInformation shipInformation = ai.getEnemyShipInformation(targetPlayerId);
+                        if(shipInformation != null) {
+                            shipInformation.addShipLocation(shipPart);
+                        } else {
+                            ai.updateEnemyShipInformation(targetPlayerId, new EnemyShipInformation(shipPart));
+                        }
+                    }
+
                     if(enemyShip.isSunk()) {
                         reward += enemyShip.getSankScore();
-                        targetPlayer.getBoard().ships.remove(enemyShip);
+//                        targetPlayer.getBoard().ships.remove(enemyShip);
+                        if(currentPlayer.isNPC()) {
+                            NPCPlayer ai = (NPCPlayer) currentPlayer;
+                            ai.updateEnemyShipInformation(targetPlayerId, null);
+                        }
                     }
                     break;
                 }
@@ -125,8 +114,8 @@ public class BattleshipGame implements Serializable {
             currentPlayer.reward(reward);
         }
         currentPlayer.addMove(moveMade);
-
         nextPlayer();
+        return true;
     }
 
     public void nextPlayer() {
