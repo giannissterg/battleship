@@ -20,6 +20,15 @@ public class NPCPlayer extends Player {
         enemyShipInformationMap.put(enemyId, newInformation);
     }
 
+    public int selectRandomEnemy(List<Player> players) {
+        Random rand = new Random();
+        int targetId = rand.nextInt(players.size());
+        while(targetId == this.getId()) {
+            targetId = rand.nextInt(players.size());
+        }
+        return targetId;
+    }
+
     public Position selectTargetPosition(int enemyId) {
         Random rand = new Random();
         Position targetPosition;

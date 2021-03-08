@@ -1,20 +1,18 @@
 package gr.ste.presentation.controllers;
 
 import gr.ste.BattleshipApplication;
-import gr.ste.domain.entities.Battleship;
-import gr.ste.domain.entities.Board;
-import gr.ste.domain.entities.Position;
-import gr.ste.domain.entities.Ship;
+import gr.ste.domain.entities.*;
 import gr.ste.domain.exceptions.InvalidScenarioException;
 import gr.ste.presentation.events.MoveEnteredEvent;
 import gr.ste.presentation.utilities.PresentationUtilities;
-import gr.ste.presentation.view_handlers.BattleshipApplicationViewHandler;
-import gr.ste.presentation.view_handlers.ViewHandler;
 import gr.ste.presentation.view_models.BattleshipViewModel;
 import gr.ste.presentation.widgets.BattleshipGridPane;
 import gr.ste.presentation.widgets.BattleshipMenuItem;
 import gr.ste.presentation.widgets.Tile;
 import javafx.animation.FadeTransition;
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -108,10 +106,19 @@ public class BattleshipController implements Initializable {
         invalidMoveLabel.visibleProperty().bind(battleshipViewModel.getShowInvalidMoveLabel().not());
         fireButton.disableProperty().bind(battleshipViewModel.getShowInvalidMoveLabel().not().or(battleshipViewModel.hasLoadedGameProperty().not()));
 
+        Label roundLabel = new Label();
+        roundLabel.textProperty().bind(battleshipViewModel.getRoundsProperty());
+        roundLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 32));
+        roundLabel.setPadding(new Insets(40, 0, 0, 0));
+
         HBox hbox = new HBox();
         for(int i = 0; i < battleshipViewModel.getNumberOfPlayers(); i++) {
             Label nameLabel = new Label();
             Label scoreLabel = new Label();
+            Label hitPercentageLabel = new Label();
+            int finalI = i;
+            hitPercentageLabel.textProperty().bind(Bindings.createStringBinding(() -> "Percentage: " + String.format("%.2f", battleshipViewModel.percentage.get(finalI).getValue()), battleshipViewModel.percentage.get(i)));
+            hitPercentageLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 24));
 
             nameLabel.textProperty().bindBidirectional(battleshipViewModel.getPlayerNameProperty(i));
             scoreLabel.textProperty().bindBidirectional(battleshipViewModel.getPlayerScoreProperty(i));
@@ -120,6 +127,7 @@ public class BattleshipController implements Initializable {
             scoreLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 26));
 
             BattleshipGridPane playerGrid = createGrid();
+            playerGrid.setOpacity(0.8);
 
             Pane spacer = new Pane();
             spacer.setPrefSize(0, 64);
@@ -146,19 +154,21 @@ public class BattleshipController implements Initializable {
             }
             HBox gridWithCoords = new HBox(yCoordinates, playerGrid);
 
-            VBox playerScoreBoard = new VBox(nameLabel, scoreLabel, spacer, xCoordinates, gridWithCoords);
+            VBox playerScoreBoard = new VBox(nameLabel, scoreLabel, hitPercentageLabel, xCoordinates, gridWithCoords);
             if(i % 2 == 0) {
                 playerScoreBoard.setAlignment(Pos.CENTER_LEFT);
             } else {
                 playerScoreBoard.setAlignment(Pos.CENTER_RIGHT);
             }
 
-            playerGrid.setOpacity(0.8);
             playerScoreBoard.setPadding(new Insets(32, 0,0,0));
             hbox.getChildren().add(playerScoreBoard);
 
-            battleshipViewModel.getPlayerShips(i).addListener((ListChangeListener<Ship>) c -> c.getList().forEach(playerGrid::add));
-            battleshipViewModel.getMoves(i).addListener((ListChangeListener<Position>) c -> {
+            battleshipViewModel.getPlayerShips(i).addListener((ListChangeListener<Ship>) c -> {
+                playerGrid.clear();
+                c.getList().forEach(playerGrid::add);
+            });
+            battleshipViewModel.getMoves(i).addListener((ListChangeListener<Move>) c -> {
                 if(c.next()) {
                     c.getAddedSubList().forEach(playerGrid::add);
                 } else {
@@ -166,10 +176,20 @@ public class BattleshipController implements Initializable {
                 }
             });
         }
+
         hbox.setAlignment(Pos.CENTER);
         hbox.setSpacing(100.0);
 
-        root.getChildren().add(1, hbox);
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().add(hbox);
+        stackPane.getChildren().add(roundLabel);
+        stackPane.setAlignment(Pos.TOP_CENTER);
+
+        root.getChildren().add(1, stackPane);
+    }
+
+    private void percent(Position p, int percent) {
+
     }
 
     private void bindProperties() {
@@ -180,14 +200,7 @@ public class BattleshipController implements Initializable {
         FadeTransition fadeTransition = new FadeTransition(Duration.millis(1000), root);
         fadeTransition.setFromValue(0.0);
         fadeTransition.setToValue(1.0);
-        //fadeTransition.setOnFinished(actionEvent -> handleLoadClickedEvent(actionEvent));
         fadeTransition.play();
-    }
-
-    private BattleshipGridPane createGrid() {
-        BattleshipGridPane gridPane = new BattleshipGridPane(Board.WIDTH, Board.HEIGHT, Board.WIDTH * 40, Board.HEIGHT * 40);
-        gridPane.setBackgroundImage("images/sea.png");
-        return gridPane;
     }
 
     @FXML
@@ -204,6 +217,7 @@ public class BattleshipController implements Initializable {
     }
 
     private void handleLoadClickedEvent(ActionEvent actionEvent) {
+        battleshipViewModel.hasLoadedGameProperty().setValue(false);
         ImageView graphic = null;
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("app_icon.jpg")) {
             if (is != null) {
@@ -223,6 +237,12 @@ public class BattleshipController implements Initializable {
         }
     }
 
+    private void showAlert(String contentText) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setContentText(contentText);
+        alert.show();
+    }
+
     private TextInputDialog createDialog(String textDefaultValue, String title, String headerText, String contentText, Node graphic) {
         TextInputDialog dialog = new TextInputDialog(textDefaultValue);
         dialog.setTitle(title);
@@ -230,12 +250,6 @@ public class BattleshipController implements Initializable {
         dialog.setContentText(contentText);
         dialog.setGraphic(graphic);
         return dialog;
-    }
-
-    private void showAlert(String contentText) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setContentText(contentText);
-        alert.show();
     }
 
     private MenuBar createMenuBar() {
@@ -263,5 +277,11 @@ public class BattleshipController implements Initializable {
             menu.getItems().add(menuItem);
         }
         return menu;
+    }
+
+    private BattleshipGridPane createGrid() {
+        BattleshipGridPane gridPane = new BattleshipGridPane(Board.WIDTH, Board.HEIGHT, Board.WIDTH * 40, Board.HEIGHT * 40);
+        gridPane.setBackgroundImage("images/sea.png");
+        return gridPane;
     }
 }

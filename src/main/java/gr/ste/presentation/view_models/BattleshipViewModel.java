@@ -2,14 +2,16 @@ package gr.ste.presentation.view_models;
 
 import gr.ste.domain.BattleshipGame;
 import gr.ste.domain.entities.Board;
+import gr.ste.domain.entities.Move;
 import gr.ste.domain.entities.Player;
-import gr.ste.domain.entities.Position;
 import gr.ste.domain.entities.Ship;
 import gr.ste.domain.exceptions.InvalidScenarioException;
 import gr.ste.domain.exceptions.ShipException;
 import gr.ste.domain.repositories.GameRepository;
 import gr.ste.presentation.events.BattleshipGameEvent;
 import gr.ste.presentation.events.MoveEnteredEvent;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.NumberBinding;
 import javafx.beans.property.*;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -29,10 +31,15 @@ public class BattleshipViewModel {
 
     private final IntegerProperty numberOfPlayers;
     private final IntegerProperty currentPlayer;
+    private final StringProperty roundsProperty;
+    private final List<IntegerProperty> misses;
+    private final List<IntegerProperty> hits;
+    public final List<NumberBinding> percentage;
+
     private final List<StringProperty> playerNameProperties;
     private final List<StringProperty> playerScoreProperties;
 
-    private final List<ObservableList<Position>> moves;
+    private final List<ObservableList<Move>> playerMoves;
     private final List<ObservableList<Ship>> playerShips;
 
     private final StringProperty invalidMove;
@@ -46,6 +53,7 @@ public class BattleshipViewModel {
 
         xTargetCoordinate = new SimpleStringProperty();
         yTargetCoordinate = new SimpleStringProperty();
+        roundsProperty = new SimpleStringProperty();
 
 //        TODO: Initial state should be independent of repository data
         int initialPlayers = 2;
@@ -54,7 +62,10 @@ public class BattleshipViewModel {
         playerScoreProperties = new ArrayList<>(initialPlayers);
         currentPlayer = new SimpleIntegerProperty((new Random().nextInt(2)));
         playerShips = new ArrayList<>();
-        moves = new ArrayList<>();
+        playerMoves = new ArrayList<>();
+        hits = new ArrayList<>();
+        misses = new ArrayList<>();
+        percentage = new ArrayList<>();
 
         for(int i = 0; i < initialPlayers; i++) {
             StringProperty nameProperty = new SimpleStringProperty("Player " + i);
@@ -64,7 +75,16 @@ public class BattleshipViewModel {
             playerScoreProperties.add(scoreProperty);
 
             playerShips.add(FXCollections.observableArrayList());
-            moves.add(FXCollections.observableArrayList());
+            playerMoves.add(FXCollections.observableArrayList());
+
+            IntegerProperty hitProperty = new SimpleIntegerProperty(0);
+            hits.add(hitProperty);
+
+            IntegerProperty missProperty = new SimpleIntegerProperty(0);
+            misses.add(missProperty);
+
+            NumberBinding percentBinding = divideSafe(hits.get(i), Bindings.add(hits.get(i),misses.get(i)), new SimpleDoubleProperty(0));
+            percentage.add(percentBinding);
         }
 
         invalidMove = new SimpleStringProperty();
@@ -75,6 +95,18 @@ public class BattleshipViewModel {
 
         xTargetCoordinate.addListener(this::validateXCoordinate);
         yTargetCoordinate.addListener(this::validateYCoordinate);
+    }
+
+    public static NumberBinding divideSafe(ObservableValue<Number> dividend, ObservableValue<Number> divisor, ObservableValue<Number> defaultValue) {
+        return Bindings.createDoubleBinding(() -> {
+
+            if (divisor.getValue().doubleValue() == 0) {
+                return defaultValue.getValue().doubleValue();
+            } else {
+                return dividend.getValue().doubleValue() / divisor.getValue().doubleValue();
+            }
+
+        }, dividend, divisor);
     }
 
     public void validateXCoordinate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -120,12 +152,20 @@ public class BattleshipViewModel {
 
                 numberOfPlayers.setValue(game.getNumberOfPlayers());
                 currentPlayer.setValue((new Random()).nextInt(game.getNumberOfPlayers()));
+                roundsProperty.setValue("Round: 0");
 
                 for (Player player : game.getPlayers()) {
                     playerNameProperties.get(player.getId()).setValue(player.getName());
                     playerScoreProperties.get(player.getId()).setValue("Score: " + player.getScore());
                     playerShips.get(player.getId()).setAll(player.getBoard().ships);
-                    moves.get(player.getId()).setAll(player.getBoard().getMissedShots());
+                    playerMoves.get(player.getId()).setAll(player.getPastMoves(0));
+                    hits.get(player.getId()).setValue(0);
+                    misses.get(player.getId()).setValue(0);
+                }
+
+                if(game.getCurrentPlayer().isNPC()) {
+                    MoveEnteredEvent nextMoveTarget = game.playRound();
+                    playMove(nextMoveTarget);
                 }
             } catch (ShipException | IOException e) {
                 e.printStackTrace();
@@ -142,12 +182,21 @@ public class BattleshipViewModel {
 
             boolean couldPlayMove = game.play(moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition());
             if(couldPlayMove) {
-                moves.get(moveEnteredEvent.getTargetPlayerId()).add(moveEnteredEvent.getTargetPosition());
+                roundsProperty.setValue("Round: " + game.getRound() / 2);
+                Move lastMove = game.getCurrentPlayer().getPastMoves(moveEnteredEvent.getTargetPlayerId()).lastElement();
+                playerMoves.get(moveEnteredEvent.getTargetPlayerId()).add(lastMove);
                 playerScoreProperties.get(game.getCurrentPlayer().getId()).setValue("Score: " + game.getCurrentPlayer().getScore());
+                if(lastMove.isHit()) {
+                    hits.get(game.getCurrentPlayer().getId()).setValue(hits.get(game.getCurrentPlayer().getId()).getValue() + 1);
+                } else {
+                    misses.get(game.getCurrentPlayer().getId()).setValue(misses.get(game.getCurrentPlayer().getId()).getValue() + 1);
+                }
 
+                invalidMove.setValue(null);
+
+                game.nextPlayer();
                 MoveEnteredEvent nextMoveTarget = game.playRound();
                 playMove(nextMoveTarget);
-                invalidMove.setValue(null);
             } else {
                 invalidMove.setValue("You have already tried that location");
             }
@@ -174,8 +223,10 @@ public class BattleshipViewModel {
         return numberOfPlayers.get();
     }
 
-    public IntegerProperty getCurrentPlayerProperty() {
-        return currentPlayer;
+    public IntegerProperty getCurrentPlayerProperty() { return currentPlayer; }
+
+    public StringProperty getRoundsProperty() {
+        return roundsProperty;
     }
 
     public StringProperty getInvalidMoveProperty() {
@@ -188,8 +239,8 @@ public class BattleshipViewModel {
         return playerShips.get(playerId);
     }
 
-    public ObservableList<Position> getMoves(int playerId) {
-        return moves.get(playerId);
+    public ObservableList<Move> getMoves(int playerId) {
+        return playerMoves.get(playerId);
     }
 
     public BooleanProperty hasLoadedGameProperty() {

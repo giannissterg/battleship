@@ -129,6 +129,29 @@ public class Board {
         return position.getX() >= 0 && position.getX() < WIDTH && position.getY() >= 0 && position.getY() < HEIGHT;
     }
 
+    public boolean oneOfAKind() {
+        int[] shipTypeFrequency = new int[5];
+        for(Ship ship : ships) {
+            if(ship instanceof Battleship) {
+                shipTypeFrequency[0]++;
+            } else if(ship instanceof Carrier) {
+                shipTypeFrequency[1]++;
+            } else if(ship instanceof Cruiser) {
+                shipTypeFrequency[2]++;
+            } else if(ship instanceof Destroyer) {
+                shipTypeFrequency[3]++;
+            } else if(ship instanceof Submarine) {
+                shipTypeFrequency[4]++;
+            }
+        }
+        for(int i = 0; i < 5; i++) {
+            if(shipTypeFrequency[i] != 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public int getWidth() {
         return width;
     }

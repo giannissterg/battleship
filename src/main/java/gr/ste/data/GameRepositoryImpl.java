@@ -3,10 +3,7 @@ package gr.ste.data;
 import gr.ste.domain.BattleshipGame;
 import gr.ste.domain.base.ListMapper;
 import gr.ste.domain.entities.*;
-import gr.ste.domain.exceptions.AdjacentTilesException;
-import gr.ste.domain.exceptions.OverlapTilesException;
-import gr.ste.domain.exceptions.OversizeException;
-import gr.ste.domain.exceptions.ShipException;
+import gr.ste.domain.exceptions.*;
 import gr.ste.domain.repositories.GameRepository;
 
 import java.io.IOException;
@@ -33,6 +30,10 @@ public class GameRepositoryImpl implements GameRepository {
 
         final Board playerBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, ships);
         final Board enemyBoard = new Board(UUID.randomUUID().toString(), Board.WIDTH, Board.HEIGHT, enemyShips);
+
+        if(!playerBoard.oneOfAKind() && !enemyBoard.oneOfAKind()) {
+            throw new InvalidCountException("Ships must be one of a kind");
+        }
 
         if(!playerBoard.isInside(ships) || !enemyBoard.isInside(enemyShips)) {
             throw new OversizeException("Ship position is out of bounds");

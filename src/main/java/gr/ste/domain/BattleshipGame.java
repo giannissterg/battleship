@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Stack;
 
 public class BattleshipGame implements Serializable {
     private final List<Player> players;
@@ -21,6 +20,10 @@ public class BattleshipGame implements Serializable {
         this.currentPlayerId = (new Random()).nextInt(players.size());
     }
 
+    public BattleshipGame(List<Player> players) {
+        this.players = players;
+    }
+
     public Player findPlayerById(int playerId) {
         assert(playerId < players.size());
         return this.players.get(playerId);
@@ -29,17 +32,17 @@ public class BattleshipGame implements Serializable {
     public Player getCurrentPlayer() {
         return players.get(currentPlayerId);
     }
-
     public List<Player> getPlayers() { return players; }
     public int getNumberOfPlayers() { return players.size(); }
+    public int getRound() { return round; }
 
     public boolean isPlayerEliminated(int playerId) {
-        for(Ship ship : players.get(playerId).getBoard().ships) {
+        for(Ship ship : findPlayerById(playerId).getBoard().ships) {
             if(!ship.isSunk()) {
                return false;
             }
         }
-        players.remove(playerId);
+        players.remove(findPlayerById(playerId));
         return true;
     }
 
@@ -47,22 +50,12 @@ public class BattleshipGame implements Serializable {
         Player currentPlayer = getCurrentPlayer();
         if(currentPlayer.isNPC()) {
             NPCPlayer ai = (NPCPlayer)currentPlayer;
-            int enemyId = selectRandomEnemy(currentPlayerId);
+            int enemyId = ai.selectRandomEnemy(players);
             Position targetPosition = ai.selectTargetPosition(enemyId);
-            MoveEnteredEvent move = new MoveEnteredEvent(targetPosition, enemyId);
-            return move;
+            return new MoveEnteredEvent(targetPosition, enemyId);
         } else {
             return null;
         }
-    }
-
-    public int selectRandomEnemy(int currentPlayerId) {
-        Random rand = new Random();
-        int targetId = rand.nextInt(players.size());
-        while(targetId == currentPlayerId) {
-            targetId = rand.nextInt(players.size());
-        }
-        return targetId;
     }
 
     public boolean play(int targetPlayerId, Position target) {
@@ -114,7 +107,9 @@ public class BattleshipGame implements Serializable {
             currentPlayer.reward(reward);
         }
         currentPlayer.addMove(moveMade);
-        nextPlayer();
+
+
+        round++;
         return true;
     }
 

@@ -7,14 +7,14 @@ public class Player {
     private final String name;
     private final PlayerType type;
     private int score;
-    private Map<Integer, Stack<Move>> pastMovesMap;
-    private Board board;
+    private final Map<Integer, Stack<Move>> pastMovesMap;
+    private final Board board;
 
     public Player(int id, String name, Board board, PlayerType playerType) {
         this.id = id;
         this.name = name;
         this.score = 0;
-        this.pastMovesMap = new HashMap<Integer, Stack<Move>>();
+        this.pastMovesMap = new HashMap<>();
         this.board = board;
         this.type = playerType;
     }

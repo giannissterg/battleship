@@ -1,8 +1,9 @@
 package gr.ste.presentation.widgets;
 
-import gr.ste.domain.entities.Position;
+import gr.ste.domain.entities.Move;
 import gr.ste.domain.entities.Ship;
 import gr.ste.presentation.utilities.PresentationUtilities;
+import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Orientation;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -38,7 +39,9 @@ public class BattleshipGridPane extends GridPane {
                 double tileWidth = width / columns;
                 double tileHeight = height / rows;
                 Tile tile = new Tile(tileWidth, tileHeight);
-                add(tile, y, x);
+                tile.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(0.5))));
+                tiles[x + y * rows] = tile;
+                add(tile, x, y);
             }
         }
     }
@@ -64,11 +67,52 @@ public class BattleshipGridPane extends GridPane {
         }
     }
 
-    public void add(Position targetPosition) {
+    public void clear() {
+        super.getChildren().clear();
+        setGridLinesVisible(true);
+        for(int y = 0; y < columns; y++) {
+            for(int x = 0; x < rows; x++) {
+                double tileWidth = width / columns;
+                double tileHeight = height / rows;
+                Tile tile = new Tile(tileWidth, tileHeight);
+                tile.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(0.5))));
+                tiles[x + y * rows] = tile;
+                add(tile, x, y);
+            }
+        }
+    }
+
+    public void add(Move targetPosition) {
         Rectangle r = new Rectangle(40.0,40.0);
         r.setFill(Color.GRAY);
         r.setOpacity(0.6);
-        add(r, targetPosition.getX(), targetPosition.getY());
+
+        Pane p = new Pane();
+        p.setPrefSize(40.0, 40.0);
+        Image image = PresentationUtilities.loadImage("images/explosion.gif");
+        assert image != null;
+        BackgroundSize backgroundSize = new BackgroundSize(
+                1.0,
+                1.0,
+                true,
+                true,
+                true,
+                false
+        );
+        BackgroundImage gridBackgroundImage = new BackgroundImage(
+                image,
+                BackgroundRepeat.ROUND,
+                BackgroundRepeat.SPACE,
+                BackgroundPosition.CENTER,
+                backgroundSize
+        );
+        Background gridBackground = new Background(gridBackgroundImage);
+        p.setBackground(gridBackground);
+        if(targetPosition.isHit()) {
+            add(p, targetPosition.getX(), targetPosition.getY());
+        } else {
+            add(r, targetPosition.getX(), targetPosition.getY());
+        }
     }
 
     public void setBackgroundImage(String imageFilePath) {
@@ -96,7 +140,6 @@ public class BattleshipGridPane extends GridPane {
     public Tile getTile(int x, int y) {
         return tiles[x + y * rows];
     }
-
 //    /**
 //     * Unhighlight all cells
 //     */
