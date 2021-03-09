@@ -25,14 +25,6 @@ public class Player {
         return board;
     }
 
-//    public void updateBoard(Move moveMade) {
-//        if(moveMade.isHit()) {
-//            board.updateShip(moveMade);
-//        } else {
-//            board.addMissedShot(moveMade);
-//        }
-//    }
-
     public Map<Integer, Double> computePercentages() {
         Map<Integer, Double> percentages = new HashMap<>();
         for (Map.Entry<Integer, Stack<Move>> entry : pastMovesMap.entrySet()) {
@@ -100,5 +92,18 @@ public class Player {
 
     public int getScore() {
         return score;
+    }
+
+    public boolean isEliminated() {
+        boolean isEliminated = false;
+        for (Ship ship : board.ships) {
+            if(ship.isSunk()) {
+                isEliminated = true;
+            } else {
+                isEliminated = false;
+                break;
+            }
+        }
+        return isEliminated;
     }
 }

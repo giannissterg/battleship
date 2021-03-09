@@ -3,7 +3,6 @@ package gr.ste.presentation.widgets;
 import gr.ste.domain.entities.Move;
 import gr.ste.domain.entities.Ship;
 import gr.ste.presentation.utilities.PresentationUtilities;
-import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Orientation;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -84,8 +83,8 @@ public class BattleshipGridPane extends GridPane {
 
     public void add(Move targetPosition) {
         Rectangle r = new Rectangle(40.0,40.0);
-        r.setFill(Color.GRAY);
-        r.setOpacity(0.6);
+        r.setFill(Color.DARKGRAY);
+        r.setOpacity(0.9);
 
         Pane p = new Pane();
         p.setPrefSize(40.0, 40.0);

@@ -31,6 +31,16 @@ public class Board {
         this.misses = new HashSet<>();
     }
 
+    public int getActiveShips() {
+        int activeShips = 0;
+        for (Ship ship : ships) {
+            if(!ship.isSunk()) {
+                activeShips++;
+            }
+        }
+        return activeShips;
+    }
+
     public boolean isInside(List<Ship> ships) {
         for(Ship ship : ships) {
             for(ShipPosition shipPosition : ship.getPositions()) {

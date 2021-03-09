@@ -9,10 +9,10 @@ public class BoardState {
     public final ObservableList<Ship> ships;
 
     public BoardState() {
-        this.ships = FXCollections.emptyObservableList();
+        this.ships = FXCollections.observableArrayList();
     }
 
     public BoardState(Board board) {
-        this.ships = FXCollections.observableList(board.ships);
+        this.ships = FXCollections.observableArrayList(board.ships);
     }
 }

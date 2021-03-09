@@ -54,7 +54,7 @@ public class Ship {
     public boolean isSunk() {
         boolean isSunk = false;
         for(ShipPosition shipPosition : positions) {
-            if(shipPosition.getShipStatus() != ShipStatus.damaged) {
+            if(shipPosition.getShipStatus() != ShipStatus.damaged && shipPosition.getShipStatus() != ShipStatus.sunk) {
                 isSunk = false;
                 break;
             } else {

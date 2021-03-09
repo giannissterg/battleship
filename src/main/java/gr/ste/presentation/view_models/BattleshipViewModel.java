@@ -6,10 +6,9 @@ import gr.ste.domain.entities.Position;
 import gr.ste.domain.exceptions.InvalidScenarioException;
 import gr.ste.domain.exceptions.ShipException;
 import gr.ste.domain.repositories.GameRepository;
-import gr.ste.presentation.events.BattleshipGameEvent;
-import gr.ste.presentation.events.LoadGameEvent;
-import gr.ste.presentation.events.MoveEnteredEvent;
-import gr.ste.presentation.events.StartGameEvent;
+import gr.ste.presentation.events.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.io.IOException;
 import java.net.URL;
@@ -19,60 +18,64 @@ public class BattleshipViewModel {
 
     private BattleshipGame game;
 
-    public GameState gameState;
+    public final ObservableList<GameState> gameStateList;
+
+    public final GameState initialGameState;
 
     public BattleshipViewModel(GameRepository gameRepository) {
         this.gameRepository = gameRepository;
+        this.gameStateList = FXCollections.observableArrayList();
 
         int initialPlayers = 2;
-        this.gameState = new GameState(initialPlayers);
+        initialGameState = new GameState(initialPlayers);
+        gameStateList.add(initialGameState);
     }
 
-//    public static NumberBinding divideSafe(ObservableValue<Number> dividend, ObservableValue<Number> divisor, ObservableValue<Number> defaultValue) {
-//        return Bindings.createDoubleBinding(() -> {
-//
-//            if (divisor.getValue().doubleValue() == 0) {
-//                return defaultValue.getValue().doubleValue();
-//            } else {
-//                return dividend.getValue().doubleValue() / divisor.getValue().doubleValue();
-//            }
-//
-//        }, dividend, divisor);
-//    }
-//
     public void mapEventToState(BattleshipGameEvent event) throws InvalidScenarioException {
+//        GameState newGameState = gameStateList.get(gameStateList.size() - 1);
         if(event instanceof LoadGameEvent) {
             LoadGameEvent loadGameEvent = (LoadGameEvent)event;
             try {
                 BattleshipGame loadedGame = loadGame(loadGameEvent.getScenarioId());
                 this.game = loadedGame;
-                this.gameState = new GameState(loadedGame);
+                this.initialGameState.update(loadedGame);
+//                newGameState = new GameState(loadedGame);
+//                this.gameStateList.add(newGameState);
             } catch (InvalidScenarioException e) {
-                e.printStackTrace();
                 throw e;
             }
         } else if(event instanceof MoveEnteredEvent) {
             MoveEnteredEvent moveEnteredEvent = (MoveEnteredEvent) event;
-            enterMove(moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition());
+            enterMove(moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition(), initialGameState);
+//            this.gameStateList.add(newGameState);
         } else if(event instanceof StartGameEvent) {
             StartGameEvent startGameEvent = (StartGameEvent) event;
-            MoveEnteredEvent possibleAiMove = game.start();
-            mapEventToState(possibleAiMove);
+            if(game != null) {
+                MoveEnteredEvent possibleAiMove = game.start();
+                this.initialGameState.hasStartedGame.setValue(true);
+    //            newGameState.hasStartedGame.setValue(true);
+                mapEventToState(possibleAiMove);
+            }
+        } else if(event instanceof ShowEnemyShipsEvent) {
+
         }
     }
 
     public BattleshipGame loadGame(String scenarioId) throws InvalidScenarioException {
         URL playerScenarioUrl = getClass().getClassLoader().getResource("medialab/player_" + scenarioId + ".txt");
         URL enemyScenarioUrl = getClass().getClassLoader().getResource("medialab/enemy_" + scenarioId + ".txt");
-        try {
-            return gameRepository.loadScenario(playerScenarioUrl.getFile(), enemyScenarioUrl.getFile());
-        } catch (ShipException | IOException e) {
-            e.printStackTrace();
-            throw new InvalidScenarioException(e.getMessage());
+        if(playerScenarioUrl != null && enemyScenarioUrl != null) {
+            try {
+                return gameRepository.loadScenario(playerScenarioUrl.getFile(), enemyScenarioUrl.getFile());
+            } catch (ShipException | IOException e) {
+                throw new InvalidScenarioException(e.getMessage());
+            }
+        } else {
+            throw new InvalidScenarioException("An invalid scenario id has been provided");
         }
     }
 
-    public void enterMove(int enemyId, Position target) {
+    public void enterMove(int enemyId, Position target, GameState gameState) {
             boolean couldPlayMove = game.play(enemyId, target);
             if(couldPlayMove) {
                 // Update round
@@ -82,15 +85,19 @@ public class BattleshipViewModel {
                 // Check for errors
                 // Next  player
                 gameState.update(game.getCurrentPlayer(), enemyId);
-                game.nextPlayer();
-                if(game.getCurrentPlayer().isNPC()) {
-                    NPCPlayer ai = (NPCPlayer) game.getCurrentPlayer();
-                    MoveEnteredEvent event = ai.chooseMove(game.getPlayers());
-                    try {
-                        mapEventToState(event);
-                    } catch (InvalidScenarioException e) {
-                        e.printStackTrace();
+                if(!game.hasEnded()) {
+                    game.nextPlayer();
+                    if (game.getCurrentPlayer().isNPC()) {
+                        NPCPlayer ai = (NPCPlayer) game.getCurrentPlayer();
+                        MoveEnteredEvent event = ai.chooseMove(game.getPlayers());
+                        try {
+                            mapEventToState(event);
+                        } catch (InvalidScenarioException e) {
+                            e.printStackTrace();
+                        }
                     }
+                } else {
+                    gameState.showEndDialog.setValue(true);
                 }
             } else {
                 gameState.invalidMove.setValue("You have already tried that location");

@@ -1,20 +1,24 @@
 package gr.ste.presentation.controllers;
 
 import gr.ste.BattleshipApplication;
-import gr.ste.domain.entities.Board;
 import gr.ste.domain.entities.Move;
 import gr.ste.domain.entities.Position;
-import gr.ste.domain.entities.Ship;
 import gr.ste.domain.exceptions.InvalidScenarioException;
+import gr.ste.presentation.events.LoadGameEvent;
 import gr.ste.presentation.events.MoveEnteredEvent;
+import gr.ste.presentation.events.ShowEnemyShipsEvent;
+import gr.ste.presentation.events.StartGameEvent;
 import gr.ste.presentation.utilities.PresentationUtilities;
 import gr.ste.presentation.view_models.BattleshipViewModel;
-import gr.ste.presentation.widgets.BattleshipGridPane;
+import gr.ste.presentation.view_models.GameState;
+import gr.ste.presentation.view_models.PlayerState;
 import gr.ste.presentation.widgets.BattleshipMenuItem;
-import gr.ste.presentation.widgets.Tile;
+import gr.ste.presentation.widgets.BoardWidget;
+import gr.ste.presentation.widgets.BottomSection;
 import javafx.animation.FadeTransition;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -28,37 +32,25 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class BattleshipController implements Initializable {
 
     @FXML
     private VBox root;
 
-    @FXML
-    private Label invalidMoveLabel;
-
-    @FXML
-    private Button fireButton;
-
-    @FXML
-    private TextField xCoordinateTextField;
-
-    @FXML
-    private TextField yCoordinateTextField;
+    private List<BoardWidget> boardWidgets;
+    private BottomSection bottomSection;
+    private Label roundLabel;
 
     private final BattleshipViewModel battleshipViewModel;
-
     private final BattleshipApplication applicationInstance;
 
     public BattleshipController(BattleshipViewModel battleshipViewModel, BattleshipApplication applicationInstance) {
@@ -70,14 +62,20 @@ public class BattleshipController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         root.setOpacity(0.0f);
         fadeIn();
-        initView();
-        bindProperties();
+        initView(battleshipViewModel.initialGameState);
+//        battleshipViewModel.gameStateList.addListener((ListChangeListener<GameState>) c -> {
+//            if(c.next()) {
+//                for (GameState gameState : c.getAddedSubList()) {
+//                    updateView(gameState);
+//                }
+//            }
+//        });
     }
 
-    private void initView() {
+    private void initView(GameState gameState) {
+        this.boardWidgets = new ArrayList<>();
         // MenuBar
         MenuBar gameMenuBar = createMenuBar();
-        root.getChildren().add(0, gameMenuBar);
 
         Image image = PresentationUtilities.loadImage("images/map.jpg");
         assert image != null;
@@ -86,115 +84,53 @@ public class BattleshipController implements Initializable {
         Background gameBackground = new Background(gameBackgroundImage);
         root.setBackground(gameBackground);
 
-        xCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.gameState.xTargetCoordinate);
-        yCoordinateTextField.textProperty().bindBidirectional(battleshipViewModel.gameState.yTargetCoordinate);
-
-        CornerRadii radius = new CornerRadii(64.0);
-        Background textFieldBackground = new Background(new BackgroundFill(Color.TRANSPARENT, radius, Insets.EMPTY));
-        Border textFieldBorder = new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, radius, BorderWidths.DEFAULT));
-        xCoordinateTextField.setBackground(textFieldBackground);
-        xCoordinateTextField.setBorder(textFieldBorder);
-
-        yCoordinateTextField.setBackground(textFieldBackground);
-        yCoordinateTextField.setBorder(textFieldBorder);
-
-        Background buttonBackground = new Background(new BackgroundFill(Color.TRANSPARENT, radius, Insets.EMPTY));
-        fireButton.setBackground(buttonBackground);
-        fireButton.setBorder(textFieldBorder);
-        fireButton.setTextFill(Color.BLACK);
-
-        invalidMoveLabel.textProperty().bind(battleshipViewModel.gameState.invalidMove);
-        invalidMoveLabel.visibleProperty().bind(battleshipViewModel.gameState.showInvalidMoveLabel.not());
-        fireButton.disableProperty().bind(battleshipViewModel.gameState.showInvalidMoveLabel.not().or(battleshipViewModel.gameState.hasLoadedGame.not()));
-
-        Label roundLabel = new Label();
-        roundLabel.textProperty().bind(Bindings.createStringBinding(() -> "Score: " + battleshipViewModel.gameState.rounds, battleshipViewModel.gameState.rounds);
-        roundLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 32));
-        roundLabel.setPadding(new Insets(40, 0, 0, 0));
+        this.roundLabel = new Label();
+        this.roundLabel.textProperty().bind(Bindings.createStringBinding(() -> "Round: " + gameState.rounds.getValue(), gameState.rounds));
+        this.roundLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 32));
+        this.roundLabel.setPadding(new Insets(40, 0, 0, 0));
 
         HBox hbox = new HBox();
-        for(int i = 0; i < battleshipViewModel.gameState.numberOfPlayers.get(); i++) {
-            Label nameLabel = new Label();
-            Label scoreLabel = new Label();
-            Label hitPercentageLabel = new Label();
-            int finalI = i;
-            hitPercentageLabel.textProperty().bind(Bindings.createStringBinding(() -> "Percentage: " + String.format("%.2f", battleshipViewModel.gameState.playerStates.get(i).percentages.get(finalI).getValue()), battleshipViewModel.percentage.get(i)));
-            hitPercentageLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 24));
+        for(PlayerState playerState : gameState.playerStates) {
+            BoardWidget boardWidget = new BoardWidget(playerState);
+            this.boardWidgets.add(boardWidget);
+            hbox.getChildren().add(boardWidget);
+        }
 
-            nameLabel.textProperty().bindBidirectional(battleshipViewModel.gameState(i));
-            scoreLabel.textProperty().bindBidirectional(battleshipViewModel.getPlayerScoreProperty(i));
-
-            nameLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 28));
-            scoreLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 26));
-
-            BattleshipGridPane playerGrid = createGrid();
-            playerGrid.setOpacity(0.8);
-
-            Pane spacer = new Pane();
-            spacer.setPrefSize(0, 64);
-
-            Tile emptyTile = new Tile(40, 40);
-
-
-            HBox xCoordinates = new HBox(emptyTile);
-            for(int x = 0; x < Board.WIDTH; x++) {
-                Tile tile = new Tile(40, 40);
-                Label xCoordinate = new Label(Integer.toString(x));
-                xCoordinate.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, FontPosture.REGULAR, 24));
-                tile.getChildren().add(xCoordinate);
-                xCoordinates.getChildren().add(tile);
-            }
-
-            VBox yCoordinates = new VBox();
-            for(int y = 0; y < Board.HEIGHT; y++) {
-                Tile tile = new Tile(40, 40);
-                Label yCoordinate = new Label(Integer.toString(y));
-                yCoordinate.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, FontPosture.REGULAR, 24));
-                tile.getChildren().add(yCoordinate);
-                yCoordinates.getChildren().add(tile);
-            }
-            HBox gridWithCoords = new HBox(yCoordinates, playerGrid);
-
-            VBox playerScoreBoard = new VBox(nameLabel, scoreLabel, hitPercentageLabel, xCoordinates, gridWithCoords);
-            if(i % 2 == 0) {
-                playerScoreBoard.setAlignment(Pos.CENTER_LEFT);
-            } else {
-                playerScoreBoard.setAlignment(Pos.CENTER_RIGHT);
-            }
-
-            playerScoreBoard.setPadding(new Insets(32, 0,0,0));
-            hbox.getChildren().add(playerScoreBoard);
-
-            battleshipViewModel.getPlayerShips(i).addListener((ListChangeListener<Ship>) c -> {
-                playerGrid.clear();
-                c.getList().forEach(playerGrid::add);
-            });
-            battleshipViewModel.getMoves(i).addListener((ListChangeListener<Move>) c -> {
+        gameState.playerStates.forEach(playerState -> playerState.moves.entrySet().forEach(entry -> {
+            Integer i = entry.getKey();
+            ObservableList<Move> moves = entry.getValue();
+            moves.addListener((ListChangeListener<Move>) c -> {
                 if(c.next()) {
-                    c.getAddedSubList().forEach(playerGrid::add);
-                } else {
-                    c.getList().forEach(playerGrid::add);
+                    c.getAddedSubList().forEach(boardWidgets.get(i).gridPane::add);
                 }
             });
-        }
+        }));
+
+        gameState.showEndDialog.addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                showEnding();
+            }
+        });
 
         hbox.setAlignment(Pos.CENTER);
         hbox.setSpacing(100.0);
 
-        StackPane stackPane = new StackPane();
-        stackPane.getChildren().add(hbox);
-        stackPane.getChildren().add(roundLabel);
+        BottomSection bottomSection = new BottomSection(gameState);
+        this.bottomSection = bottomSection;
+        this.bottomSection.fireButton.setOnAction(this::fire);
+
+        StackPane stackPane = new StackPane(hbox, roundLabel);
         stackPane.setAlignment(Pos.TOP_CENTER);
 
-        root.getChildren().add(1, stackPane);
+        root.getChildren().setAll(gameMenuBar, stackPane, bottomSection);
     }
 
-    private void percent(Position p, int percent) {
-
-    }
-
-    private void bindProperties() {
-
+    private void updateView(GameState gameState) {
+        this.roundLabel.textProperty().bind(Bindings.createStringBinding(() -> "Round: " + gameState.rounds.getValue(), gameState.rounds));
+        for (PlayerState playerState : gameState.playerStates) {
+            this.boardWidgets.get(playerState.id.getValue()).update(playerState);
+        }
+        bottomSection.update(gameState);
     }
 
     private void fadeIn() {
@@ -204,21 +140,52 @@ public class BattleshipController implements Initializable {
         fadeTransition.play();
     }
 
-    @FXML
-    private void fire() {
-        final String x = xCoordinateTextField.getText();
-        final String y = yCoordinateTextField.getText();
+    private void fire(ActionEvent event) {
+        final String x = bottomSection.xCoordinateTextField.getText();
+        final String y = bottomSection.yCoordinateTextField.getText();
         final Position targetPosition = new Position(Integer.parseInt(x), Integer.parseInt(y));
         MoveEnteredEvent moveEnteredEvent = new MoveEnteredEvent(targetPosition, 1);
-        battleshipViewModel.playMove(moveEnteredEvent);
+        try {
+            battleshipViewModel.mapEventToState(moveEnteredEvent);
+        } catch (InvalidScenarioException e) {
+            showAlert(e.getMessage(), Alert.AlertType.WARNING);
+        }
+    }
+
+    private void showEnding() {
+        int winnerId = 0;
+        int maxScore = 0;
+        int secondMaxScore = 0;
+        for (PlayerState playerState : battleshipViewModel.initialGameState.playerStates) {
+            if(playerState.score.getValue() > maxScore) {
+                secondMaxScore = maxScore;
+                maxScore = playerState.score.getValue();
+                winnerId = playerState.id.getValue();
+            } else if(playerState.score.getValue() > secondMaxScore) {
+                secondMaxScore = playerState.score.getValue();
+            }
+        }
+        if(maxScore == secondMaxScore) {
+            showEndBanner("Game has ended", "It is a draw", Alert.AlertType.INFORMATION);
+        } else {
+            if(winnerId == 0) {
+                showEndBanner("Game has ended", "Congratulations! You are the winner", Alert.AlertType.INFORMATION);
+            } else {
+                showEndBanner("Game has ended","Unfortunately, you lost!", Alert.AlertType.INFORMATION);
+            }
+        }
     }
 
     private void handleStartClickedEvent(ActionEvent actionEvent) {
-        battleshipViewModel.hasLoadedGameProperty().setValue(true);
+        StartGameEvent event = new StartGameEvent();
+        try {
+            battleshipViewModel.mapEventToState(event);
+        } catch (InvalidScenarioException e) {
+            showAlert(e.getMessage(), Alert.AlertType.WARNING);
+        }
     }
 
     private void handleLoadClickedEvent(ActionEvent actionEvent) {
-        battleshipViewModel.hasLoadedGameProperty().setValue(false);
         ImageView graphic = null;
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("app_icon.jpg")) {
             if (is != null) {
@@ -231,15 +198,40 @@ public class BattleshipController implements Initializable {
         Optional<String> result = dialog.showAndWait();
         if(result.isPresent()) {
             try {
-                battleshipViewModel.loadGame(result.get());
+                LoadGameEvent event = new LoadGameEvent(result.get());
+                battleshipViewModel.mapEventToState(event);
             } catch (InvalidScenarioException e) {
-                showAlert(e.getMessage());
+                showAlert(e.getMessage(), Alert.AlertType.WARNING);
             }
         }
     }
 
-    private void showAlert(String contentText) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
+    private void handleShowEnemyShips(ActionEvent event) {
+        ShowEnemyShipsEvent enemyShipsEvent = new ShowEnemyShipsEvent();
+        try {
+            battleshipViewModel.mapEventToState(enemyShipsEvent);
+        } catch (InvalidScenarioException e) {
+            showAlert(e.getMessage(), Alert.AlertType.WARNING);
+        }
+    }
+
+    private void handleLastPlayerShots(ActionEvent event) {
+
+    }
+
+    private void handleLastEnemyShots(ActionEvent event) {
+
+    }
+
+    private void showEndBanner(String title, String headerText, Alert.AlertType alertType) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(headerText);
+        alert.show();
+    }
+
+    private void showAlert(String contentText, Alert.AlertType alertType) {
+        Alert alert = new Alert(alertType);
         alert.setContentText(contentText);
         alert.show();
     }
@@ -261,9 +253,9 @@ public class BattleshipController implements Initializable {
                 new BattleshipMenuItem("Load", this::handleLoadClickedEvent, new KeyCodeCombination(KeyCode.L, KeyCombination.CONTROL_DOWN))
         };
         BattleshipMenuItem[] detailsMenuItems = {
-                new BattleshipMenuItem("Enemy ships"),
-                new BattleshipMenuItem("Player shots"),
-                new BattleshipMenuItem("Enemy shots")
+                new BattleshipMenuItem("Enemy ships", this::handleShowEnemyShips, new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)),
+                new BattleshipMenuItem("Player shots", this::handleLastPlayerShots, new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN)),
+                new BattleshipMenuItem("Enemy shots", this::handleLastEnemyShots, new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN))
         };
         Menu applicationMenu = createMenu("Application", applicationMenuItems);
         Menu detailsMenu = createMenu("Details", detailsMenuItems);
@@ -278,11 +270,5 @@ public class BattleshipController implements Initializable {
             menu.getItems().add(menuItem);
         }
         return menu;
-    }
-
-    private BattleshipGridPane createGrid() {
-        BattleshipGridPane gridPane = new BattleshipGridPane(Board.WIDTH, Board.HEIGHT, Board.WIDTH * 40, Board.HEIGHT * 40);
-        gridPane.setBackgroundImage("images/sea.png");
-        return gridPane;
     }
 }

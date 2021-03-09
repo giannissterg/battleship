@@ -119,7 +119,17 @@ public class BattleshipGame {
         currentPlayerId = (currentPlayerId + 1) % players.size();
     }
 
-    public boolean hasGameEnded() {
-        return players.size() == 1 || round >= 40;
+    public boolean hasEnded() {
+        int eliminatedPlayers = 0;
+        for (Player player : players) {
+            if(player.isEliminated()) {
+               eliminatedPlayers++;
+            }
+        }
+        return eliminatedPlayers == getNumberOfPlayers() - 1 || round >= 2 * 40;
+    }
+
+    public boolean isHasStarted() {
+        return hasStarted;
     }
 }
