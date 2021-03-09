@@ -65,7 +65,7 @@ public class PlayerState {
         for (Map.Entry<Integer, Stack<Move>> entry : player.getMovesMap().entrySet()) {
             Integer integer = entry.getKey();
             Stack<Move> value = entry.getValue();
-            this.getMoves(integer).add(value.lastElement());
+            this.getMoves(integer).setAll(value);
         }
 
         for (Map.Entry<Integer, DoubleProperty> entry : percentages.entrySet()) {

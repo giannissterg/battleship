@@ -10,17 +10,22 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 
 public class BottomSection extends VBox {
     public final TextField xCoordinateTextField;
     public final TextField yCoordinateTextField;
+    public final Label xLabel;
+    public final Label yLabel;
     public final Label invalidMoveLabel;
     public final Button fireButton;
 
     public BottomSection() {
         xCoordinateTextField = new TextField();
         yCoordinateTextField = new TextField();
+        xLabel = new Label("X:");
+        yLabel = new Label("Y:");
         invalidMoveLabel = new Label();
         fireButton = new Button("Fire");
 
@@ -29,8 +34,9 @@ public class BottomSection extends VBox {
 
         invalidMoveLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 26));
 
-        xCoordinateTextField.setPromptText("X coordinate");
-        yCoordinateTextField.setPromptText("Y coordinate");
+        xLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, FontPosture.REGULAR, 24));
+        yLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, FontPosture.REGULAR, 24));
+
         Insets margin = new Insets(16.0);
         HBox.setMargin(xCoordinateTextField, margin);
         HBox.setMargin(yCoordinateTextField, margin);
@@ -61,6 +67,8 @@ public class BottomSection extends VBox {
     public BottomSection(GameState gameState) {
         xCoordinateTextField = new TextField();
         yCoordinateTextField = new TextField();
+        xLabel = new Label("X:");
+        yLabel = new Label("Y:");
         invalidMoveLabel = new Label();
         fireButton = new Button("Fire");
         fireButton.setOnMouseEntered(this::hover);
@@ -69,7 +77,10 @@ public class BottomSection extends VBox {
         invalidMoveLabel.setTextFill(Color.RED);
         invalidMoveLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 26));
 
-        Insets margin = new Insets(8.0);
+        xLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, FontPosture.REGULAR, 24));
+        yLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, FontPosture.REGULAR, 24));
+
+        Insets margin = new Insets(10.0);
         HBox.setMargin(xCoordinateTextField, margin);
         HBox.setMargin(yCoordinateTextField, margin);
         setOpaqueInsets(margin);
@@ -88,7 +99,7 @@ public class BottomSection extends VBox {
         fireButton.setBorder(textFieldBorder);
         fireButton.setTextFill(Color.BLACK);
 
-        HBox line = new HBox(xCoordinateTextField, yCoordinateTextField, fireButton);
+        HBox line = new HBox(xLabel, xCoordinateTextField, yLabel, yCoordinateTextField, fireButton);
         line.setAlignment(Pos.CENTER);
 
         getChildren().addAll(invalidMoveLabel, line);

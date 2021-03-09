@@ -11,6 +11,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -25,12 +27,14 @@ public class BoardWidget extends VBox {
     public final BattleshipGridPane gridPane;
     private final HBox xCoordinates;
     private final VBox yCoordinates;
+    public final Circle currentPlayer;
 
     public BoardWidget() {
         this.nameLabel = new Label();
         this.scoreLabel = new Label();
         this.percentageLabel = new Label();
         this.activeShipsLabel = new Label();
+        this.currentPlayer = new Circle(5.0, Color.BLACK);
 
         nameLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 28));
         scoreLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 26));
@@ -72,6 +76,8 @@ public class BoardWidget extends VBox {
         this.scoreLabel = new Label();
         this.percentageLabel = new Label();
         this.activeShipsLabel = new Label();
+        this.currentPlayer = new Circle(5.0, Color.BLACK);
+        this.currentPlayer.setVisible(false);
 
         nameLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 28));
         scoreLabel.setFont(Font.font("Blackadder ITC", FontWeight.NORMAL, 26));
@@ -110,19 +116,28 @@ public class BoardWidget extends VBox {
         }
         HBox gridWithCoords = new HBox(yCoordinates, gridPane);
 
+        HBox nameWithCircle;
         if(playerState.id.getValue() % 2 == 0) {
             setAlignment(Pos.CENTER_LEFT);
+            nameWithCircle = new HBox(nameLabel, currentPlayer);
+            nameWithCircle.setAlignment(Pos.BASELINE_LEFT);
         } else {
             setAlignment(Pos.CENTER_RIGHT);
+            nameWithCircle = new HBox(currentPlayer, nameLabel);
+            nameWithCircle.setAlignment(Pos.BASELINE_RIGHT);
         }
+        nameWithCircle.setSpacing(15.0);
 
-        playerState.boardState.ships.addListener((ListChangeListener<Ship>) c -> {
-            gridPane.clear();
-            c.getList().forEach(gridPane::add);
-        });
+        if(playerState.id.getValue() == 0) {
+            playerState.boardState.ships.addListener((ListChangeListener<Ship>) c -> {
+                gridPane.clear();
+                c.getList().forEach(gridPane::add);
+            });
+        }
         setPadding(new Insets(32, 0,0,0));
 
-        getChildren().addAll(nameLabel, scoreLabel, percentageLabel, activeShipsLabel, xCoordinates, gridWithCoords);
+
+        getChildren().addAll(nameWithCircle, scoreLabel, percentageLabel, activeShipsLabel, xCoordinates, gridWithCoords);
     }
 
     public void update(PlayerState playerState) {

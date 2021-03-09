@@ -25,7 +25,7 @@ public class GameState {
 
     public final BooleanProperty showEndDialog;
 
-    GameState(int initialPlayers) {
+    public GameState(int initialPlayers) {
         this.playerStates = new ArrayList<>();
         for(int i = 0; i < initialPlayers; i++) {
             PlayerState playerState = new PlayerState(i);
@@ -42,7 +42,7 @@ public class GameState {
         }
 
         this.rounds = new SimpleIntegerProperty(0);
-        this.currentPlayer = new SimpleIntegerProperty();
+        this.currentPlayer = new SimpleIntegerProperty(0);
         this.numberOfPlayers = new SimpleIntegerProperty(initialPlayers);
 
         this.invalidMove = new SimpleStringProperty();

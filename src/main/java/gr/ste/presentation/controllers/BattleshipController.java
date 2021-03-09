@@ -1,12 +1,10 @@
 package gr.ste.presentation.controllers;
 
 import gr.ste.BattleshipApplication;
-import gr.ste.domain.entities.Move;
-import gr.ste.domain.entities.Position;
+import gr.ste.domain.entities.*;
 import gr.ste.domain.exceptions.InvalidScenarioException;
 import gr.ste.presentation.events.LoadGameEvent;
 import gr.ste.presentation.events.MoveEnteredEvent;
-import gr.ste.presentation.events.ShowEnemyShipsEvent;
 import gr.ste.presentation.events.StartGameEvent;
 import gr.ste.presentation.utilities.PresentationUtilities;
 import gr.ste.presentation.view_models.BattleshipViewModel;
@@ -34,12 +32,16 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Callback;
 import javafx.util.Duration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class BattleshipController implements Initializable {
 
@@ -63,13 +65,6 @@ public class BattleshipController implements Initializable {
         root.setOpacity(0.0f);
         fadeIn();
         initView(battleshipViewModel.initialGameState);
-//        battleshipViewModel.gameStateList.addListener((ListChangeListener<GameState>) c -> {
-//            if(c.next()) {
-//                for (GameState gameState : c.getAddedSubList()) {
-//                    updateView(gameState);
-//                }
-//            }
-//        });
     }
 
     private void initView(GameState gameState) {
@@ -94,7 +89,9 @@ public class BattleshipController implements Initializable {
             BoardWidget boardWidget = new BoardWidget(playerState);
             this.boardWidgets.add(boardWidget);
             hbox.getChildren().add(boardWidget);
+            boardWidgets.get(gameState.currentPlayer.getValue()).currentPlayer.visibleProperty().bind(Bindings.createBooleanBinding(() -> gameState.currentPlayer.getValue() == playerState.id.getValue(), gameState.currentPlayer, playerState.id));
         }
+
 
         gameState.playerStates.forEach(playerState -> playerState.moves.entrySet().forEach(entry -> {
             Integer i = entry.getKey();
@@ -207,20 +204,103 @@ public class BattleshipController implements Initializable {
     }
 
     private void handleShowEnemyShips(ActionEvent event) {
-        ShowEnemyShipsEvent enemyShipsEvent = new ShowEnemyShipsEvent();
-        try {
-            battleshipViewModel.mapEventToState(enemyShipsEvent);
-        } catch (InvalidScenarioException e) {
-            showAlert(e.getMessage(), Alert.AlertType.WARNING);
+        if(battleshipViewModel.initialGameState.hasStartedGame.getValue()) {
+            int enemyId = 1;
+            PlayerState enemy = battleshipViewModel.initialGameState.playerStates.get(enemyId);
+            Dialog<ButtonType> dialog = new Dialog<>();
+            ListView<TilePane> listPane = new ListView<>();
+            for (Ship ship : enemy.boardState.ships) {
+                String shipType = "Ship";
+                if (ship instanceof Carrier) {
+                    shipType = "Carrier";
+                } else if (ship instanceof Cruiser) {
+                    shipType = "Cruiser";
+                } else if (ship instanceof Battleship) {
+                    shipType = "Battleship";
+                } else if (ship instanceof Submarine) {
+                    shipType = "Submarine";
+                } else if (ship instanceof Destroyer) {
+                    shipType = "Destroyer";
+                }
+                Label shipLabel = new Label(shipType + ":");
+                Label shipStatusLabel = new Label(ship.getState().toString().toUpperCase());
+
+                shipLabel.setAlignment(Pos.CENTER_LEFT);
+                shipStatusLabel.setAlignment(Pos.CENTER_LEFT);
+
+                TilePane hbox = new TilePane(shipLabel, shipStatusLabel);
+                hbox.setPrefSize(150.0, 30.0);
+                hbox.setAlignment(Pos.CENTER_LEFT);
+                listPane.getItems().add(hbox);
+            }
+            listPane.setMinSize(100.0, 40.0);
+            dialog.setTitle("Enemy Ships");
+            dialog.getDialogPane().getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE));
+            dialog.getDialogPane().setContent(listPane);
+            dialog.showAndWait();
+        } else {
+            showAlert("Game has not been started yet", Alert.AlertType.WARNING);
         }
     }
 
     private void handleLastPlayerShots(ActionEvent event) {
-
+        if(battleshipViewModel.initialGameState.hasStartedGame.getValue()) {
+            ObservableList<Move> playerMoves = battleshipViewModel.initialGameState.playerStates.get(0).getMoves(1);
+            if(!playerMoves.isEmpty()) {
+                Dialog<ButtonType> dialog = new Dialog<>();
+                ListView<Label> dialogPane = new ListView<>();
+                for (int i = playerMoves.size() - 1; i > playerMoves.size() - 6 && i >= 0; i--) {
+                    Move pastMove = playerMoves.get(i);
+                    String labelText;
+                    if(!pastMove.isHit()) {
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   MISS";
+                    } else {
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   " + pastMove.getShipType().toString();
+                    }
+                    Label moveLabel = new Label(labelText);
+                    dialogPane.getItems().add(moveLabel);
+                }
+                dialogPane.setPrefSize(320.0, 140.0);
+                dialog.setTitle("Last 5 Player Shots");
+                dialog.getDialogPane().getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE));
+                dialog.getDialogPane().setContent(dialogPane);
+                dialog.showAndWait();
+            } else {
+                showAlert("No moves have been made yet", Alert.AlertType.WARNING);
+            }
+        } else {
+            showAlert("Game has not been started yet", Alert.AlertType.WARNING);
+        }
     }
 
     private void handleLastEnemyShots(ActionEvent event) {
-
+        if(battleshipViewModel.game != null) {
+            ObservableList<Move> playerMoves = battleshipViewModel.initialGameState.playerStates.get(1).getMoves(0);
+            if(!playerMoves.isEmpty()) {
+                Dialog<ButtonType> dialog = new Dialog<>();
+                ListView<Label> dialogPane = new ListView<>();
+                for (int i = playerMoves.size() - 1; i > playerMoves.size() - 6 && i >= 0; i--) {
+                    Move pastMove = playerMoves.get(i);
+                    String labelText;
+                    if(!pastMove.isHit()) {
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   MISS";
+                    } else {
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   " + pastMove.getShipType().toString();
+                    }
+                    Label moveLabel = new Label(labelText);
+                    dialogPane.getItems().add(moveLabel);
+                }
+                dialogPane.setPrefSize(320.0, 140.0);
+                dialog.setTitle("Last 5 Enemy Shots");
+                dialog.getDialogPane().getButtonTypes().add(new ButtonType("OK", ButtonBar.ButtonData.CANCEL_CLOSE));
+                dialog.getDialogPane().setContent(dialogPane);
+                dialog.showAndWait();
+            } else {
+                showAlert("No moves have been made yet", Alert.AlertType.WARNING);
+            }
+        } else {
+            showAlert("Game has not been started yet", Alert.AlertType.WARNING);
+        }
     }
 
     private void showEndBanner(String title, String headerText, Alert.AlertType alertType) {

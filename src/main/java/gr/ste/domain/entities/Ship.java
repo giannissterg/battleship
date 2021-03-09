@@ -67,4 +67,21 @@ public class Ship {
         }
         return isSunk;
     }
+
+    public ShipStatus getState() {
+        int countDamaged = 0;
+        for(ShipPosition shipPosition : positions) {
+            if(shipPosition.getShipStatus() == ShipStatus.damaged || shipPosition.getShipStatus() == ShipStatus.sunk) {
+                countDamaged++;
+            }
+        }
+        if(countDamaged == positions.size()) {
+            return ShipStatus.sunk;
+        }
+        if(countDamaged > 0) {
+            return ShipStatus.damaged;
+        } else {
+            return ShipStatus.untouched;
+        }
+    }
 }

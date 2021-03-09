@@ -16,7 +16,7 @@ import java.net.URL;
 public class BattleshipViewModel {
     private final GameRepository gameRepository;
 
-    private BattleshipGame game;
+    public BattleshipGame game;
 
     public final ObservableList<GameState> gameStateList;
 
@@ -32,28 +32,23 @@ public class BattleshipViewModel {
     }
 
     public void mapEventToState(BattleshipGameEvent event) throws InvalidScenarioException {
-//        GameState newGameState = gameStateList.get(gameStateList.size() - 1);
         if(event instanceof LoadGameEvent) {
             LoadGameEvent loadGameEvent = (LoadGameEvent)event;
             try {
                 BattleshipGame loadedGame = loadGame(loadGameEvent.getScenarioId());
                 this.game = loadedGame;
                 this.initialGameState.update(loadedGame);
-//                newGameState = new GameState(loadedGame);
-//                this.gameStateList.add(newGameState);
             } catch (InvalidScenarioException e) {
                 throw e;
             }
         } else if(event instanceof MoveEnteredEvent) {
             MoveEnteredEvent moveEnteredEvent = (MoveEnteredEvent) event;
             enterMove(moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition(), initialGameState);
-//            this.gameStateList.add(newGameState);
         } else if(event instanceof StartGameEvent) {
             StartGameEvent startGameEvent = (StartGameEvent) event;
             if(game != null) {
                 MoveEnteredEvent possibleAiMove = game.start();
                 this.initialGameState.hasStartedGame.setValue(true);
-    //            newGameState.hasStartedGame.setValue(true);
                 mapEventToState(possibleAiMove);
             }
         } else if(event instanceof ShowEnemyShipsEvent) {
