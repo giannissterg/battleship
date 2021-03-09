@@ -32,7 +32,6 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.util.Callback;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -89,19 +88,15 @@ public class BattleshipController implements Initializable {
             BoardWidget boardWidget = new BoardWidget(playerState);
             this.boardWidgets.add(boardWidget);
             hbox.getChildren().add(boardWidget);
-            boardWidgets.get(gameState.currentPlayer.getValue()).currentPlayer.visibleProperty().bind(Bindings.createBooleanBinding(() -> gameState.currentPlayer.getValue() == playerState.id.getValue(), gameState.currentPlayer, playerState.id));
+            boardWidgets.get(gameState.currentPlayer.getValue()).currentPlayer.visibleProperty().bind(Bindings.createBooleanBinding(() -> gameState.currentPlayer.getValue().equals(playerState.id.getValue()), gameState.currentPlayer, playerState.id));
         }
 
 
-        gameState.playerStates.forEach(playerState -> playerState.moves.entrySet().forEach(entry -> {
-            Integer i = entry.getKey();
-            ObservableList<Move> moves = entry.getValue();
-            moves.addListener((ListChangeListener<Move>) c -> {
-                if(c.next()) {
-                    c.getAddedSubList().forEach(boardWidgets.get(i).gridPane::add);
-                }
-            });
-        }));
+        gameState.playerStates.forEach(playerState -> playerState.moves.forEach((i, moves) -> moves.addListener((ListChangeListener<Move>) c -> {
+            if (c.next()) {
+                c.getAddedSubList().forEach(boardWidgets.get(i).gridPane::add);
+            }
+        })));
 
         gameState.showEndDialog.addListener((observable, oldValue, newValue) -> {
             if(newValue) {
@@ -112,6 +107,7 @@ public class BattleshipController implements Initializable {
         hbox.setAlignment(Pos.CENTER);
         hbox.setSpacing(100.0);
 
+        // Bottom Section
         BottomSection bottomSection = new BottomSection(gameState);
         this.bottomSection = bottomSection;
         this.bottomSection.fireButton.setOnAction(this::fire);
@@ -122,7 +118,7 @@ public class BattleshipController implements Initializable {
         root.getChildren().setAll(gameMenuBar, stackPane, bottomSection);
     }
 
-    private void updateView(GameState gameState) {
+    private void rebindProperties(GameState gameState) {
         this.roundLabel.textProperty().bind(Bindings.createStringBinding(() -> "Round: " + gameState.rounds.getValue(), gameState.rounds));
         for (PlayerState playerState : gameState.playerStates) {
             this.boardWidgets.get(playerState.id.getValue()).update(playerState);

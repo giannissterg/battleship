@@ -2,9 +2,10 @@ package gr.ste.domain;
 
 import gr.ste.domain.entities.*;
 import gr.ste.presentation.events.MoveEnteredEvent;
-import javafx.application.Platform;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Class that holds game logic
@@ -95,8 +96,7 @@ public class BattleshipGame {
         Player startingPlayer = findPlayerById(currentPlayerId);
         if (startingPlayer.isNPC()) {
             NPCPlayer ai = (NPCPlayer) startingPlayer;
-            MoveEnteredEvent aiMove = ai.chooseMove(players);
-            return aiMove;
+            return ai.chooseMove(players);
         } else {
             return null;
         }

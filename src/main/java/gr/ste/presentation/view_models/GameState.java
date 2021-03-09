@@ -90,6 +90,12 @@ public class GameState {
         }
     }
 
+    // Update round
+    // Update moves
+    // Update score
+    // Update percentage
+    // Check for errors
+    // Next  player
     public void update(Player current, int enemyId) {
         invalidMove.setValue(null);
 

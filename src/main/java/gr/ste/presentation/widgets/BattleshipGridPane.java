@@ -139,15 +139,5 @@ public class BattleshipGridPane extends GridPane {
     public Tile getTile(int x, int y) {
         return tiles[x + y * rows];
     }
-//    /**
-//     * Unhighlight all cells
-//     */
-////    public void unhighlight() {
-////        for( int row=0; row < rows; row++) {
-////            for( int col=0; col < columns; col++) {
-////                tiles[row][col].unhighlight();
-////            }
-////        }
-////    }
 }
 
