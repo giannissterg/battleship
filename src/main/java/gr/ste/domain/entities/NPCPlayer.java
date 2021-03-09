@@ -1,5 +1,6 @@
 package gr.ste.domain.entities;
 
+import gr.ste.presentation.events.MoveEnteredEvent;
 import javafx.geometry.Orientation;
 
 import java.util.*;
@@ -18,6 +19,12 @@ public class NPCPlayer extends Player {
 
     public void updateEnemyShipInformation(int enemyId, EnemyShipInformation newInformation) {
         enemyShipInformationMap.put(enemyId, newInformation);
+    }
+
+    public MoveEnteredEvent chooseMove(List<Player> players) {
+        int enemyId = selectRandomEnemy(players);
+        Position target = selectTargetPosition(enemyId);
+        return new MoveEnteredEvent(target, enemyId);
     }
 
     public int selectRandomEnemy(List<Player> players) {

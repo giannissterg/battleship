@@ -54,7 +54,7 @@ public class Ship {
     public boolean isSunk() {
         boolean isSunk = false;
         for(ShipPosition shipPosition : positions) {
-            if(shipPosition.getShipStatus() != ShipStatus.damaged) {
+            if(shipPosition.getShipStatus() != ShipStatus.damaged && shipPosition.getShipStatus() != ShipStatus.sunk) {
                 isSunk = false;
                 break;
             } else {
@@ -66,5 +66,22 @@ public class Ship {
             positions.forEach(shipPosition -> shipPosition.setShipStatus(ShipStatus.sunk));
         }
         return isSunk;
+    }
+
+    public ShipStatus getState() {
+        int countDamaged = 0;
+        for(ShipPosition shipPosition : positions) {
+            if(shipPosition.getShipStatus() == ShipStatus.damaged || shipPosition.getShipStatus() == ShipStatus.sunk) {
+                countDamaged++;
+            }
+        }
+        if(countDamaged == positions.size()) {
+            return ShipStatus.sunk;
+        }
+        if(countDamaged > 0) {
+            return ShipStatus.damaged;
+        } else {
+            return ShipStatus.untouched;
+        }
     }
 }

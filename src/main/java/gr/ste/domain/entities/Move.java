@@ -2,23 +2,27 @@ package gr.ste.domain.entities;
 
 public class Move extends Position {
 
-    private final boolean hit;
     private final int targetId;
+    private final ShipType shipType;
 
-    public Move(int x, int y, boolean hit, int targetId) {
+    public Move(int x, int y, ShipType shipType, int targetId) {
         super(x, y);
-        this.hit = hit;
+        this.shipType = shipType;
         this.targetId = targetId;
     }
 
-    public Move(Position position, boolean hit, int targetId) {
+    public Move(Position position, ShipType shipType, int targetId) {
         super(position.getX(), position.getY());
-        this.hit = hit;
+        this.shipType = shipType;
         this.targetId = targetId;
     }
 
     public boolean isHit() {
-        return hit;
+        return shipType != ShipType.NONE;
+    }
+
+    public ShipType getShipType() {
+        return shipType;
     }
 
     public int getTargetId() {
