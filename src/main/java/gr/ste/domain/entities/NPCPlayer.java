@@ -30,10 +30,6 @@ public class NPCPlayer extends Player {
         }
     }
 
-    public EnemyShipInformation getEnemyShipInformation(int enemyId) {
-        return enemyShipInformationMap.get(enemyId);
-    }
-
     public MoveEnteredEvent chooseMove(List<Player> players) {
         int enemyId = selectRandomEnemy(players);
         Position target = selectTargetPosition(enemyId);
@@ -55,7 +51,7 @@ public class NPCPlayer extends Player {
 
         Stack<Move> pastMoves = this.getPastMoves(enemyId);
         List<Position> availableMoves = this.getAvailableMoves(enemyId);
-        EnemyShipInformation enemyShipInformation = this.getEnemyShipInformation(enemyId);
+        EnemyShipInformation enemyShipInformation = this.enemyShipInformationMap.get(enemyId);
         if(enemyShipInformation != null) {
             List<Position> possibleMoves = new ArrayList<>();
             List<Position> knownShipLocations = enemyShipInformation.getShipLocations();

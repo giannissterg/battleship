@@ -110,8 +110,8 @@ public class BottomSection extends VBox {
         yCoordinateTextField.textProperty().bindBidirectional(gameState.yTargetCoordinate);
 
         invalidMoveLabel.textProperty().bind(gameState.invalidMove);
-        invalidMoveLabel.visibleProperty().bind(gameState.showInvalidMoveLabel.not());
-        fireButton.disableProperty().bind(gameState.showInvalidMoveLabel.not().or(gameState.hasStartedGame.not()));
+        invalidMoveLabel.visibleProperty().bind(gameState.showInvalidMoveLabel);
+        fireButton.disableProperty().bind(gameState.showInvalidMoveLabel.or(gameState.hasStartedGame.not()));
     }
 
     public void update(GameState gameState) {
@@ -119,8 +119,8 @@ public class BottomSection extends VBox {
         yCoordinateTextField.textProperty().bindBidirectional(gameState.yTargetCoordinate);
 
         invalidMoveLabel.textProperty().bind(gameState.invalidMove);
-        invalidMoveLabel.visibleProperty().bind(gameState.showInvalidMoveLabel.not());
-        fireButton.disableProperty().bind(gameState.showInvalidMoveLabel.not().or(gameState.hasStartedGame.not()));
+        invalidMoveLabel.visibleProperty().bind(gameState.showInvalidMoveLabel);
+        fireButton.disableProperty().bind(gameState.showInvalidMoveLabel.or(gameState.hasStartedGame.not()));
     }
 
     private void hover(MouseEvent mouseEvent) {

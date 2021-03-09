@@ -47,7 +47,7 @@ public class GameState {
 
         this.invalidMove = new SimpleStringProperty();
         this.showInvalidMoveLabel = new ReadOnlyBooleanWrapper(false);
-        this.showInvalidMoveLabel.bind(invalidMove.isEmpty());
+        this.showInvalidMoveLabel.bind(invalidMove.isNotEmpty());
         this.showEndDialog = new SimpleBooleanProperty(false);
 
         this.hasStartedGame = new SimpleBooleanProperty(false);
@@ -71,7 +71,7 @@ public class GameState {
 
         this.invalidMove = new SimpleStringProperty();
         this.showInvalidMoveLabel = new ReadOnlyBooleanWrapper(false);
-        this.showInvalidMoveLabel.bind(invalidMove.isEmpty());
+        this.showInvalidMoveLabel.bind(invalidMove.isNotEmpty());
         this.showEndDialog = new SimpleBooleanProperty(false);
 
         this.hasStartedGame = new SimpleBooleanProperty(false);
