@@ -7,7 +7,4 @@ public class Tile extends StackPane {
         setMinSize(width, height);
         //setOpacity(0.9);
     }
-//    public String toString() {
-//        return this.column + "/" + this.row;
-//    }
 }

@@ -5,8 +5,10 @@ import gr.ste.domain.base.ListMapper;
 import gr.ste.domain.entities.*;
 import gr.ste.domain.exceptions.*;
 import gr.ste.domain.repositories.GameRepository;
+import gr.ste.presentation.events.MoveEnteredEvent;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -51,6 +53,31 @@ public class GameRepositoryImpl implements GameRepository {
         final Player player2 = new NPCPlayer(1,"Kostas", enemyBoard);
 
         return new BattleshipGame(player1, player2);
+    }
+
+    @Override
+    public BattleshipGame loadScenarioFromId(String scenarioId) throws InvalidScenarioException {
+        URL playerScenarioUrl = getClass().getClassLoader().getResource("medialab/player_" + scenarioId + ".txt");
+        URL enemyScenarioUrl = getClass().getClassLoader().getResource("medialab/enemy_" + scenarioId + ".txt");
+        if(playerScenarioUrl != null && enemyScenarioUrl != null) {
+            try {
+                return loadScenario(playerScenarioUrl.getFile(), enemyScenarioUrl.getFile());
+            } catch (ShipException | IOException e) {
+                throw new InvalidScenarioException(e.getMessage());
+            }
+        } else {
+            throw new InvalidScenarioException("An invalid scenario id has been provided");
+        }
+    }
+
+    @Override
+    public BattleshipGame updateGame(BattleshipGame game, int enemyId, Position target) throws InvalidMoveException {
+        boolean couldPlayMove = game.play(enemyId, target);
+        if(couldPlayMove) {
+            return game;
+        } else {
+            throw new InvalidMoveException("You have already tried that location");
+        }
     }
 
     @Override

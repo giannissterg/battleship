@@ -19,11 +19,17 @@ public class Player {
         this.type = playerType;
     }
 
-    public boolean isNPC() { return type == PlayerType.npc; }
-
-    public Board getBoard() {
-        return board;
+    public void update(Move move) {
+        addMove(move);
+        if(move.getHitShip() != null) {
+            score += move.getHitShip().getDamage();
+            if(move.getHitShip().isSunk()) {
+                score += move.getHitShip().getSankScore();
+            }
+        }
     }
+
+    public boolean isNPC() { return type == PlayerType.npc; }
 
     public Map<Integer, Double> computePercentages() {
         Map<Integer, Double> percentages = new HashMap<>();
@@ -46,15 +52,6 @@ public class Player {
         return percentages;
     }
 
-    public Map<Integer, Stack<Move>> getMovesMap() {
-        return pastMovesMap;
-    }
-
-    public Stack<Move> getPastMoves(int enemyId) {
-        pastMovesMap.computeIfAbsent(enemyId, k -> new Stack<>());
-        return pastMovesMap.get(enemyId);
-    }
-
     public List<Position> getAvailableMoves(int enemyId) {
         List<Position> availableMoves = new ArrayList<>(Board.WIDTH * Board.HEIGHT);
         for(int y = 0; y < board.getHeight(); y++) {
@@ -74,24 +71,26 @@ public class Player {
         return availableMoves;
     }
 
-    public void addMove(Move move) {
-        pastMovesMap.get(move.getTargetId()).add(move);
-    }
-
-    public void reward(int reward) {
-        this.score += reward;
-    }
+    private void addMove(Move move) { pastMovesMap.get(move.getTargetId()).add(move); }
 
     public int getId() {
         return id;
     }
-
     public String getName() {
         return name;
     }
-
     public int getScore() {
         return score;
+    }
+    public Board getBoard() {
+        return board;
+    }
+    public Map<Integer, Stack<Move>> getMovesMap() {
+        return pastMovesMap;
+    }
+    public Stack<Move> getPastMoves(int enemyId) {
+        pastMovesMap.computeIfAbsent(enemyId, k -> new Stack<>());
+        return pastMovesMap.get(enemyId);
     }
 
     public boolean isEliminated() {

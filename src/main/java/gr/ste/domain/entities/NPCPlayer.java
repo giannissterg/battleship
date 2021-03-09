@@ -13,12 +13,25 @@ public class NPCPlayer extends Player {
         this.enemyShipInformationMap = new HashMap<>();
     }
 
-    public EnemyShipInformation getEnemyShipInformation(int enemyId) {
-        return enemyShipInformationMap.get(enemyId);
+    @Override
+    public void update(Move move) {
+        super.update(move);
+        if(move.getHitShip() != null) {
+            EnemyShipInformation shipInformation = enemyShipInformationMap.get(move.getTargetId());
+            if (shipInformation != null) {
+                shipInformation.addShipLocation(move);
+            } else {
+                enemyShipInformationMap.put(move.getTargetId(), new EnemyShipInformation(move));
+            }
+
+            if(move.getHitShip().isSunk()) {
+                enemyShipInformationMap.put(move.getTargetId(), null);
+            }
+        }
     }
 
-    public void updateEnemyShipInformation(int enemyId, EnemyShipInformation newInformation) {
-        enemyShipInformationMap.put(enemyId, newInformation);
+    public EnemyShipInformation getEnemyShipInformation(int enemyId) {
+        return enemyShipInformationMap.get(enemyId);
     }
 
     public MoveEnteredEvent chooseMove(List<Player> players) {

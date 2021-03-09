@@ -2,101 +2,56 @@ package gr.ste.presentation.view_models;
 
 import gr.ste.domain.BattleshipGame;
 import gr.ste.domain.entities.NPCPlayer;
-import gr.ste.domain.entities.Position;
+import gr.ste.domain.exceptions.InvalidMoveException;
 import gr.ste.domain.exceptions.InvalidScenarioException;
-import gr.ste.domain.exceptions.ShipException;
 import gr.ste.domain.repositories.GameRepository;
-import gr.ste.presentation.events.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
-import java.io.IOException;
-import java.net.URL;
+import gr.ste.presentation.events.BattleshipGameEvent;
+import gr.ste.presentation.events.LoadGameEvent;
+import gr.ste.presentation.events.MoveEnteredEvent;
+import gr.ste.presentation.events.StartGameEvent;
 
 public class BattleshipViewModel {
     private final GameRepository gameRepository;
-
     public BattleshipGame game;
-
-    public final ObservableList<GameState> gameStateList;
-
     public final GameState initialGameState;
 
     public BattleshipViewModel(GameRepository gameRepository) {
         this.gameRepository = gameRepository;
-        this.gameStateList = FXCollections.observableArrayList();
-
         int initialPlayers = 2;
         initialGameState = new GameState(initialPlayers);
-        gameStateList.add(initialGameState);
     }
 
     public void mapEventToState(BattleshipGameEvent event) throws InvalidScenarioException {
         if(event instanceof LoadGameEvent) {
             LoadGameEvent loadGameEvent = (LoadGameEvent)event;
-            try {
-                BattleshipGame loadedGame = loadGame(loadGameEvent.getScenarioId());
-                this.game = loadedGame;
-                this.initialGameState.update(loadedGame);
-            } catch (InvalidScenarioException e) {
-                throw e;
-            }
+            BattleshipGame loadedGame = gameRepository.loadScenarioFromId(loadGameEvent.getScenarioId());
+            this.game = loadedGame;
+            this.initialGameState.update(loadedGame);
+            this.initialGameState.hasStartedGame.setValue(false);
         } else if(event instanceof MoveEnteredEvent) {
             MoveEnteredEvent moveEnteredEvent = (MoveEnteredEvent) event;
-            enterMove(moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition(), initialGameState);
+            try {
+                this.game = gameRepository.updateGame(this.game, moveEnteredEvent.getTargetPlayerId(), moveEnteredEvent.getTargetPosition());
+                this.initialGameState.update(this.game.getCurrentPlayer(), moveEnteredEvent.getTargetPlayerId());
+                if(this.game.hasEnded()) {
+                    initialGameState.showEndDialog.setValue(true);
+                } else {
+                    this.game.nextPlayer();
+                    if (this.game.getCurrentPlayer().isNPC()) {
+                        NPCPlayer ai = (NPCPlayer) this.game.getCurrentPlayer();
+                        MoveEnteredEvent aiEvent = ai.chooseMove(game.getPlayers());
+                        mapEventToState(aiEvent);
+                    }
+                }
+            } catch (InvalidMoveException e) {
+                this.initialGameState.invalidMove.setValue("You have already tried that location");
+            }
         } else if(event instanceof StartGameEvent) {
-            StartGameEvent startGameEvent = (StartGameEvent) event;
             if(game != null) {
                 MoveEnteredEvent possibleAiMove = game.start();
                 this.initialGameState.hasStartedGame.setValue(true);
                 mapEventToState(possibleAiMove);
             }
-        } else if(event instanceof ShowEnemyShipsEvent) {
-
         }
     }
-
-    public BattleshipGame loadGame(String scenarioId) throws InvalidScenarioException {
-        URL playerScenarioUrl = getClass().getClassLoader().getResource("medialab/player_" + scenarioId + ".txt");
-        URL enemyScenarioUrl = getClass().getClassLoader().getResource("medialab/enemy_" + scenarioId + ".txt");
-        if(playerScenarioUrl != null && enemyScenarioUrl != null) {
-            try {
-                return gameRepository.loadScenario(playerScenarioUrl.getFile(), enemyScenarioUrl.getFile());
-            } catch (ShipException | IOException e) {
-                throw new InvalidScenarioException(e.getMessage());
-            }
-        } else {
-            throw new InvalidScenarioException("An invalid scenario id has been provided");
-        }
-    }
-
-    public void enterMove(int enemyId, Position target, GameState gameState) {
-            boolean couldPlayMove = game.play(enemyId, target);
-            if(couldPlayMove) {
-                // Update round
-                // Update moves
-                // Update score
-                // Update percentage
-                // Check for errors
-                // Next  player
-                gameState.update(game.getCurrentPlayer(), enemyId);
-                if(!game.hasEnded()) {
-                    game.nextPlayer();
-                    if (game.getCurrentPlayer().isNPC()) {
-                        NPCPlayer ai = (NPCPlayer) game.getCurrentPlayer();
-                        MoveEnteredEvent event = ai.chooseMove(game.getPlayers());
-                        try {
-                            mapEventToState(event);
-                        } catch (InvalidScenarioException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    gameState.showEndDialog.setValue(true);
-                }
-            } else {
-                gameState.invalidMove.setValue("You have already tried that location");
-            }
-        }
-
 }

@@ -32,7 +32,6 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.util.Callback;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -68,10 +67,10 @@ public class BattleshipController implements Initializable {
     }
 
     private void initView(GameState gameState) {
-        this.boardWidgets = new ArrayList<>();
         // MenuBar
         MenuBar gameMenuBar = createMenuBar();
 
+        // Background image
         Image image = PresentationUtilities.loadImage("images/map.jpg");
         assert image != null;
         BackgroundSize backgroundSize = new BackgroundSize(1.0, 1.0, true, true, true, false);
@@ -79,29 +78,28 @@ public class BattleshipController implements Initializable {
         Background gameBackground = new Background(gameBackgroundImage);
         root.setBackground(gameBackground);
 
+        // Round label
         this.roundLabel = new Label();
         this.roundLabel.textProperty().bind(Bindings.createStringBinding(() -> "Round: " + gameState.rounds.getValue(), gameState.rounds));
         this.roundLabel.setFont(Font.font("Blackadder ITC", FontWeight.BOLD, 32));
         this.roundLabel.setPadding(new Insets(40, 0, 0, 0));
 
         HBox hbox = new HBox();
+        this.boardWidgets = new ArrayList<>();
         for(PlayerState playerState : gameState.playerStates) {
             BoardWidget boardWidget = new BoardWidget(playerState);
             this.boardWidgets.add(boardWidget);
             hbox.getChildren().add(boardWidget);
-            boardWidgets.get(gameState.currentPlayer.getValue()).currentPlayer.visibleProperty().bind(Bindings.createBooleanBinding(() -> gameState.currentPlayer.getValue() == playerState.id.getValue(), gameState.currentPlayer, playerState.id));
+            boardWidgets.get(gameState.currentPlayer.getValue()).currentPlayer.visibleProperty().bind(Bindings.createBooleanBinding(() -> gameState.currentPlayer.getValue().equals(playerState.id.getValue()), gameState.currentPlayer, playerState.id));
         }
+        hbox.setAlignment(Pos.CENTER);
+        hbox.setSpacing(100.0);
 
-
-        gameState.playerStates.forEach(playerState -> playerState.moves.entrySet().forEach(entry -> {
-            Integer i = entry.getKey();
-            ObservableList<Move> moves = entry.getValue();
-            moves.addListener((ListChangeListener<Move>) c -> {
-                if(c.next()) {
-                    c.getAddedSubList().forEach(boardWidgets.get(i).gridPane::add);
-                }
-            });
-        }));
+        gameState.playerStates.forEach(playerState -> playerState.moves.forEach((i, moves) -> moves.addListener((ListChangeListener<Move>) c -> {
+            if (c.next()) {
+                c.getAddedSubList().forEach(boardWidgets.get(i).gridPane::add);
+            }
+        })));
 
         gameState.showEndDialog.addListener((observable, oldValue, newValue) -> {
             if(newValue) {
@@ -109,9 +107,7 @@ public class BattleshipController implements Initializable {
             }
         });
 
-        hbox.setAlignment(Pos.CENTER);
-        hbox.setSpacing(100.0);
-
+        // Bottom Section
         BottomSection bottomSection = new BottomSection(gameState);
         this.bottomSection = bottomSection;
         this.bottomSection.fireButton.setOnAction(this::fire);
@@ -122,7 +118,7 @@ public class BattleshipController implements Initializable {
         root.getChildren().setAll(gameMenuBar, stackPane, bottomSection);
     }
 
-    private void updateView(GameState gameState) {
+    private void rebindProperties(GameState gameState) {
         this.roundLabel.textProperty().bind(Bindings.createStringBinding(() -> "Round: " + gameState.rounds.getValue(), gameState.rounds));
         for (PlayerState playerState : gameState.playerStates) {
             this.boardWidgets.get(playerState.id.getValue()).update(playerState);
@@ -253,9 +249,9 @@ public class BattleshipController implements Initializable {
                     Move pastMove = playerMoves.get(i);
                     String labelText;
                     if(!pastMove.isHit()) {
-                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   MISS";
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   Miss";
                     } else {
-                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   " + pastMove.getShipType().toString();
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   " + pastMove.getHitShip().getString();
                     }
                     Label moveLabel = new Label(labelText);
                     dialogPane.getItems().add(moveLabel);
@@ -283,9 +279,9 @@ public class BattleshipController implements Initializable {
                     Move pastMove = playerMoves.get(i);
                     String labelText;
                     if(!pastMove.isHit()) {
-                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   MISS";
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   Miss";
                     } else {
-                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   " + pastMove.getShipType().toString();
+                        labelText = "Move " + i + ":  (" + pastMove.getX() + "," + pastMove.getY() + ")   " + pastMove.getHitShip().getString();
                     }
                     Label moveLabel = new Label(labelText);
                     dialogPane.getItems().add(moveLabel);

@@ -5,7 +5,7 @@ import javafx.geometry.Orientation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Ship {
+public abstract class Ship {
     private final String id;
     private final int space;
     private final Orientation orientation;
@@ -82,6 +82,20 @@ public class Ship {
             return ShipStatus.damaged;
         } else {
             return ShipStatus.untouched;
+        }
+    }
+
+    public String getString() {
+        if(this instanceof Carrier) {
+            return "Carrier";
+        } else if (this instanceof Battleship) {
+            return "Battleship";
+        } else if (this instanceof Cruiser) {
+            return "Cruiser";
+        } else if (this instanceof Destroyer) {
+            return "Destroyer";
+        } else {
+            return "Submarine";
         }
     }
 }

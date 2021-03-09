@@ -133,7 +133,10 @@ public class BoardWidget extends VBox {
                 gridPane.clear();
                 c.getList().forEach(gridPane::add);
             });
+        } else {
+            playerState.boardState.ships.addListener((ListChangeListener<Ship>) c -> gridPane.clear());
         }
+
         setPadding(new Insets(32, 0,0,0));
 
 

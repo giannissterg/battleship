@@ -2,9 +2,10 @@ package gr.ste.domain;
 
 import gr.ste.domain.entities.*;
 import gr.ste.presentation.events.MoveEnteredEvent;
-import javafx.application.Platform;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Class that holds game logic
@@ -13,7 +14,6 @@ public class BattleshipGame {
     private final List<Player> players;
     private int currentPlayerId;
     private int round;
-    private boolean hasStarted;
 
     /**
      * Constructs a new 2-player battleship game
@@ -35,17 +35,15 @@ public class BattleshipGame {
         }
 
         this.currentPlayerId = (new Random()).nextInt(players.size());
-        this.hasStarted = false;
     }
 
     /**
-     * Constructs a multiplayer game of arbirtary number of players
+     * Constructs a multiplayer game of arbitrary number of players
      * @param players List of game's players
      */
     public BattleshipGame(List<Player> players) {
         this.players = players;
         this.currentPlayerId = (new Random()).nextInt(players.size());
-        this.hasStarted = false;
     }
 
 
@@ -87,16 +85,14 @@ public class BattleshipGame {
     public int getRound() { return round; }
 
     /**
-     * First method that starts game
+     * First method that starts the game
      * @return The first move if startingPlayer is an NPC, null otherwise
      */
     public MoveEnteredEvent start() {
-        hasStarted = true;
         Player startingPlayer = findPlayerById(currentPlayerId);
         if (startingPlayer.isNPC()) {
             NPCPlayer ai = (NPCPlayer) startingPlayer;
-            MoveEnteredEvent aiMove = ai.chooseMove(players);
-            return aiMove;
+            return ai.chooseMove(players);
         } else {
             return null;
         }
@@ -117,73 +113,25 @@ public class BattleshipGame {
 
         // Check if move is already played
         for(Move move : currentPlayer.getPastMoves(targetPlayerId)) {
-            if(move.getX() == target.getX() && move.getY() == target.getY()) {
+            if(move.equals(target)) {
                 return false;
             }
         }
 
-        ShipType shipType = ShipType.NONE;
-        int reward = 0;
+        Ship hitShip = null;
         for (Ship enemyShip : targetPlayer.getBoard().ships) {
             for (ShipPosition shipPart : enemyShip.getPositions()) {
                 if (target.equals(shipPart)) {
-                    shipType = findShipType(enemyShip);
-                    reward += enemyShip.getDamage();
                     shipPart.setShipStatus(ShipStatus.damaged);
-                    if (currentPlayer.isNPC()) {
-                        NPCPlayer ai = (NPCPlayer) currentPlayer;
-                        EnemyShipInformation shipInformation = ai.getEnemyShipInformation(targetPlayerId);
-                        if(shipInformation != null) {
-                            shipInformation.addShipLocation(shipPart);
-                        } else {
-                            ai.updateEnemyShipInformation(targetPlayerId, new EnemyShipInformation(shipPart));
-                        }
-                    }
-
-                    if(enemyShip.isSunk()) {
-                        reward += enemyShip.getSankScore();
-                        // targetPlayer.getBoard().ships.remove(enemyShip);
-                        if(currentPlayer.isNPC()) {
-                            NPCPlayer ai = (NPCPlayer) currentPlayer;
-                            ai.updateEnemyShipInformation(targetPlayerId, null);
-                        }
-                    }
+                    hitShip = enemyShip;
                     break;
                 }
             }
         }
-
-        Move moveMade = new Move(target, shipType, targetPlayer.getId());
-        if(shipType == ShipType.NONE) {
-            targetPlayer.getBoard().addMissedShot(target);
-        } else {
-            currentPlayer.reward(reward);
-        }
-        currentPlayer.addMove(moveMade);
-
+        Move moveMade = new Move(target, targetPlayerId, hitShip);
+        currentPlayer.update(moveMade);
         round++;
         return true;
-    }
-
-    /**
-     * Helper method to find ship's type
-     * @param ship Instance of ship
-     * @return Type of the given ship
-     */
-    private ShipType findShipType(Ship ship) {
-        if(ship instanceof Carrier) {
-            return ShipType.CARRIER;
-        } else if(ship instanceof Battleship) {
-            return ShipType.BATTLESHIP;
-        } else if(ship instanceof Cruiser) {
-            return ShipType.CRUISER;
-        } else if(ship instanceof Submarine) {
-            return ShipType.SUBMARINE;
-        } else if (ship instanceof Destroyer){
-            return ShipType.DESTROYER;
-        } else {
-            return ShipType.NONE;
-        }
     }
 
     /**

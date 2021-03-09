@@ -59,6 +59,8 @@ out/
 build/
 .gradle/
 
+./gradle/**
+
 build/**
 
 # mpeltonen/sbt-idea plugin

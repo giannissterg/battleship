@@ -3,32 +3,21 @@ package gr.ste.domain.entities;
 import javafx.geometry.Orientation;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Board {
     private final String id;
     private final int width;
     private final int height;
     public final List<Ship> ships;
-    private final Set<Position> misses;
     public static final int WIDTH = 10;
     public static final int HEIGHT = 10;
 
-    public Board(String id, int width, int height) {
-        this.id = id;
-        this.width = width;
-        this.height = height;
-        this.ships = new ArrayList<>();
-        this.misses = new HashSet<>();
-    }
     public Board(String id, int width, int height, List<Ship> ships) {
         this.id = id;
         this.width = width;
         this.ships = ships;
         this.height = height;
-        this.misses = new HashSet<>();
     }
 
     public int getActiveShips() {
@@ -162,19 +151,8 @@ public class Board {
         return true;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
+    public int getWidth() { return width; }
     public int getHeight() {
         return height;
-    }
-
-    public void addMissedShot(Position position) {
-        misses.add(position);
-    }
-
-    public Set<Position> getMissedShots() {
-        return misses;
     }
 }
